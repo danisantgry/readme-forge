@@ -27,12 +27,19 @@ Check whether an existing README is missing common maintainer sections:
 npx github:danisantgry/readme-forge . --check
 ```
 
+Review generated README changes as a diff before writing:
+
+```bash
+npx github:danisantgry/readme-forge . --diff
+```
+
 ## Features
 
 - Detects project name, description, scripts, package manager, TypeScript, Vite, Next.js, React, Express, Python, Rust, and Go markers.
 - Generates setup, scripts, testing, structure, and license sections.
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
+- Supports diff reviews and JSON output for automation.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
 - Designed for maintainer workflows where README updates should be repeatable, reviewable, and safe.
@@ -82,6 +89,19 @@ Check README quality:
 
 ```bash
 npm run dev -- . --check
+```
+
+Review changes without overwriting README:
+
+```bash
+npm run dev -- . --diff
+```
+
+Emit machine-readable output for automation:
+
+```bash
+npm run dev -- . --dry-run --format json
+npm run dev -- . --check --format json
 ```
 
 Use a template preset:
@@ -138,6 +158,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - first-pass README drafts for new repositories
 - recurring README updates before releases
 - contributor-friendly documentation reviews
+- machine-readable checks for automation and agent workflows
 - optional AI refinement without making AI required for the project
 
 ## Feedback Wanted
@@ -146,6 +167,7 @@ If you maintain an open-source project, feedback is especially useful on:
 
 - README sections that should be checked by `--check`
 - ecosystem metadata that should be detected next
+- workflows that should consume `--format json`
 - generated output that feels too generic or misses important context
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).

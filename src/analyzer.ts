@@ -20,6 +20,16 @@ async function readJson(filePath: string): Promise<Record<string, unknown> | und
   }
 }
 
+const ignoredEntries = new Set([".git", "node_modules", "dist", "coverage"]);
+
+async function listProjectEntries(root: string): Promise<string[]> {
+  const entries = await readdir(root, { withFileTypes: true });
+  return entries
+    .filter((entry) => !ignoredEntries.has(entry.name))
+    .map((entry) => entry.name)
+    .sort((a, b) => a.localeCompare(b));
+}
+
 function detectPackageManager(files: string[]): ProjectFacts["packageManager"] {
   if (files.includes("pnpm-lock.yaml")) return "pnpm";
   if (files.includes("yarn.lock")) return "yarn";
@@ -28,7 +38,7 @@ function detectPackageManager(files: string[]): ProjectFacts["packageManager"] {
 }
 
 export async function analyzeProject(root: string): Promise<ProjectFacts> {
-  const files = await readdir(root);
+  const files = await listProjectEntries(root);
   const packageJson = await readJson(path.join(root, "package.json"));
   const dependencies = {
     ...(packageJson?.dependencies as Record<string, string> | undefined),

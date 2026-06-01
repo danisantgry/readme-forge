@@ -8,6 +8,14 @@ async function readJson(filePath) {
         return undefined;
     }
 }
+const ignoredEntries = new Set([".git", "node_modules", "dist", "coverage"]);
+async function listProjectEntries(root) {
+    const entries = await readdir(root, { withFileTypes: true });
+    return entries
+        .filter((entry) => !ignoredEntries.has(entry.name))
+        .map((entry) => entry.name)
+        .sort((a, b) => a.localeCompare(b));
+}
 function detectPackageManager(files) {
     if (files.includes("pnpm-lock.yaml"))
         return "pnpm";
@@ -18,7 +26,7 @@ function detectPackageManager(files) {
     return files.includes("package.json") ? "npm" : "unknown";
 }
 export async function analyzeProject(root) {
-    const files = await readdir(root);
+    const files = await listProjectEntries(root);
     const packageJson = await readJson(path.join(root, "package.json"));
     const dependencies = {
         ...packageJson?.dependencies,
