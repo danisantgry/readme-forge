@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+.env
+README.generated.md
+*.log
+.DS_Store
