@@ -105,6 +105,24 @@ Optional model override:
 set GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
+## Scripts
+
+- `dev`: run the CLI from TypeScript source with `tsx`.
+- `build`: compile TypeScript into `dist/`.
+- `test`: run the Vitest suite.
+- `lint`: type-check without emitting files.
+- `prepublishOnly`: validate lint, build, and tests before publication.
+
+## Testing
+
+```bash
+npm run lint
+npm run build
+npm test
+npm audit
+npm pack --dry-run
+```
+
 ## Safety
 
 The CLI reads project metadata and writes only the requested README output. API keys are read from the environment and are not written to disk.
