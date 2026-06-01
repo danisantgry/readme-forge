@@ -1,0 +1,14 @@
+{
+  "name": "tiny-format-kit",
+  "version": "0.1.0",
+  "description": "Small formatting helpers for terminal tools.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
