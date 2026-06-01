@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-06-01
+
+- Added committed build output so the CLI can be tested directly from GitHub before npm publication.
+- Updated installation docs with `npx github:danisantgry/readme-forge`.
+
 ## 0.2.0 - 2026-06-01
 
 - Added `--dry-run` to preview generated README output without writing files.

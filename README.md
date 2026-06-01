@@ -17,6 +17,14 @@ Many open-source projects have useful code but incomplete onboarding. `readme-fo
 
 ## Install
 
+Run directly from GitHub:
+
+```bash
+npx github:danisantgry/readme-forge . --dry-run
+```
+
+After npm publication:
+
 ```bash
 npx readme-forge .
 ```
@@ -94,6 +102,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 
 ## Roadmap
 
+- npm publication under the `readme-forge` package name.
 - More framework detectors for Rust, Go, Python, and package-manager-specific workflows.
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
