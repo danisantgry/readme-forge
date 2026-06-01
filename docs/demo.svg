@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="title desc">
+  <title id="title">readme-forge terminal demo</title>
+  <desc id="desc">A terminal preview showing readme-forge generating README content from project metadata.</desc>
+  <rect width="900" height="420" rx="14" fill="#101418"/>
+  <rect x="0" y="0" width="900" height="44" rx="14" fill="#1b222a"/>
+  <circle cx="24" cy="22" r="7" fill="#ff5f57"/>
+  <circle cx="46" cy="22" r="7" fill="#ffbd2e"/>
+  <circle cx="68" cy="22" r="7" fill="#28c840"/>
+  <text x="92" y="28" fill="#aeb9c6" font-family="Consolas, monospace" font-size="14">readme-forge demo</text>
+  <text x="28" y="82" fill="#7dd3fc" font-family="Consolas, monospace" font-size="17">$ npx github:danisantgry/readme-forge . --dry-run</text>
+  <text x="28" y="124" fill="#ffffff" font-family="Consolas, monospace" font-size="18"># sample-user-project</text>
+  <text x="28" y="160" fill="#d1d5db" font-family="Consolas, monospace" font-size="16">A sample project.</text>
+  <text x="28" y="206" fill="#ffffff" font-family="Consolas, monospace" font-size="17">## Highlights</text>
+  <text x="28" y="240" fill="#d1d5db" font-family="Consolas, monospace" font-size="15">- Built with JavaScript.</text>
+  <text x="28" y="270" fill="#d1d5db" font-family="Consolas, monospace" font-size="15">- Includes clear setup, run, and test instructions.</text>
+  <text x="28" y="300" fill="#d1d5db" font-family="Consolas, monospace" font-size="15">- Documents installation, usage, testing, and structure.</text>
+  <text x="28" y="346" fill="#ffffff" font-family="Consolas, monospace" font-size="17">## Testing</text>
+  <text x="28" y="380" fill="#a7f3d0" font-family="Consolas, monospace" font-size="15">npm run test</text>
+</svg>

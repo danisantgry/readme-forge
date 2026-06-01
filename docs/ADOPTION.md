@@ -15,6 +15,7 @@ This document keeps adoption work honest and measurable. The goal is to earn rea
 - npm package page after publishing
 - short posts in developer communities asking for feedback
 - direct use on small public repositories owned by the maintainer
+- GitHub release tarball while npm publication is pending
 
 ## Feedback Request
 
@@ -31,6 +32,7 @@ Repo: https://github.com/danisantgry/readme-forge
 - npm downloads after publication
 - release count and changelog quality
 - number of supported ecosystems and fixtures
+- successful public `npx github:danisantgry/readme-forge` smoke tests
 
 ## Do Not Do
 

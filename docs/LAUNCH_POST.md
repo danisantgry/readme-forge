@@ -11,7 +11,7 @@ It works offline by default, supports optional Gemini refinement via env vars, a
 - cli/library/web templates
 - TypeScript, Vite, React, Next.js, Express, Python, Rust, and Go markers
 
-I’d love maintainer feedback: what README checks or ecosystem detectors would make this genuinely useful?
+I would love maintainer feedback: what README checks or ecosystem detectors would make this genuinely useful?
 
 https://github.com/danisantgry/readme-forge
 ```

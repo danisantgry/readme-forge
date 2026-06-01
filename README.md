@@ -1,16 +1,38 @@
 # readme-forge
 
+[![Release](https://img.shields.io/github/v/release/danisantgry/readme-forge?label=release)](https://github.com/danisantgry/readme-forge/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Issues](https://img.shields.io/github/issues/danisantgry/readme-forge)](https://github.com/danisantgry/readme-forge/issues)
+[![Try with npx](https://img.shields.io/badge/try-npx%20github%3Adanisantgry%2Freadme--forge-blue)](#install)
+
 `readme-forge` is a TypeScript CLI that inspects a project folder and generates a clean, practical `README.md`. It works offline with local templates and can optionally ask Gemini to refine the output when `GEMINI_API_KEY` is present.
+
+![readme-forge terminal demo](docs/demo.svg)
 
 ## Why It Exists
 
 Many open-source projects have useful code but incomplete onboarding. `readme-forge` helps maintainers keep project documentation accurate by generating README drafts from real repository metadata instead of blank-page guessing.
 
+## Quick Try
+
+Preview a README for the current folder without writing files:
+
+```bash
+npx github:danisantgry/readme-forge . --dry-run
+```
+
+Check whether an existing README is missing common maintainer sections:
+
+```bash
+npx github:danisantgry/readme-forge . --check
+```
+
 ## Features
 
-- Detects project name, description, scripts, package manager, TypeScript, Vite, Next.js, React, Express, and Python markers.
+- Detects project name, description, scripts, package manager, TypeScript, Vite, Next.js, React, Express, Python, Rust, and Go markers.
 - Generates setup, scripts, testing, structure, and license sections.
 - Supports custom output paths.
+- Supports `cli`, `library`, and `web` template presets.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
 - Designed for maintainer workflows where README updates should be repeatable, reviewable, and safe.
@@ -99,6 +121,16 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - recurring README updates before releases
 - contributor-friendly documentation reviews
 - optional AI refinement without making AI required for the project
+
+## Feedback Wanted
+
+If you maintain an open-source project, feedback is especially useful on:
+
+- README sections that should be checked by `--check`
+- ecosystem metadata that should be detected next
+- generated output that feels too generic or misses important context
+
+Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
 
 ## Roadmap
 
