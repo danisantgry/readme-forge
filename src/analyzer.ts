@@ -9,6 +9,7 @@ export type ProjectFacts = {
   frameworks: string[];
   scripts: Record<string, string>;
   files: string[];
+  license?: string;
 };
 
 async function readJson(filePath: string): Promise<Record<string, unknown> | undefined> {
@@ -40,13 +41,17 @@ export async function analyzeProject(root: string): Promise<ProjectFacts> {
     dependencyNames.includes("next") ? "Next.js" : undefined,
     dependencyNames.includes("react") ? "React" : undefined,
     dependencyNames.includes("express") ? "Express" : undefined,
-    files.includes("pyproject.toml") ? "Python package" : undefined
+    files.includes("pyproject.toml") ? "Python package" : undefined,
+    files.includes("Cargo.toml") ? "Rust crate" : undefined,
+    files.includes("go.mod") ? "Go module" : undefined
   ].filter(Boolean) as string[];
 
   const languages = [
     files.includes("tsconfig.json") ? "TypeScript" : undefined,
     files.includes("package.json") ? "JavaScript" : undefined,
-    files.includes("requirements.txt") || files.includes("pyproject.toml") ? "Python" : undefined
+    files.includes("requirements.txt") || files.includes("pyproject.toml") ? "Python" : undefined,
+    files.includes("Cargo.toml") ? "Rust" : undefined,
+    files.includes("go.mod") ? "Go" : undefined
   ].filter(Boolean) as string[];
 
   return {
@@ -56,6 +61,7 @@ export async function analyzeProject(root: string): Promise<ProjectFacts> {
     languages,
     frameworks,
     scripts: (packageJson?.scripts as Record<string, string> | undefined) ?? {},
-    files
+    files,
+    license: String(packageJson?.license ?? (files.includes("LICENSE") ? "See LICENSE" : ""))
   };
 }

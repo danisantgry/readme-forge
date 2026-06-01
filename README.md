@@ -18,6 +18,12 @@ Many open-source projects have useful code but incomplete onboarding. `readme-fo
 ## Install
 
 ```bash
+npx readme-forge .
+```
+
+For local development:
+
+```bash
 npm install
 npm run build
 ```
@@ -34,6 +40,26 @@ Write to a separate file:
 
 ```bash
 npm run dev -- . --output README.generated.md
+```
+
+Preview without writing:
+
+```bash
+npm run dev -- . --dry-run
+```
+
+Check README quality:
+
+```bash
+npm run dev -- . --check
+```
+
+Use a template preset:
+
+```bash
+npm run dev -- . --template cli
+npm run dev -- . --template library
+npm run dev -- . --template web
 ```
 
 Use Gemini refinement:
@@ -68,9 +94,9 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 
 ## Roadmap
 
-- More framework detectors.
+- More framework detectors for Rust, Go, Python, and package-manager-specific workflows.
 - README templates for libraries, CLIs, and web apps.
-- Badge generation.
+- npm publishing and release workflow documentation.
 - README quality checks for missing install/test/license sections.
 
 ## Contributing

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 - 2026-06-01
+
+- Added `--dry-run` to preview generated README output without writing files.
+- Added `--check` to report missing maintainer-oriented README sections.
+- Added `--template auto|cli|library|web` presets.
+- Added Rust and Go metadata detection.
+- Added npm publishing metadata and `prepublishOnly` validation.
+- Added adoption docs and launch copy for community feedback.
+
 ## 0.1.0 - 2026-06-01
 
 - Added TypeScript CLI for generating README files from project metadata.

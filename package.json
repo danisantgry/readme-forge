@@ -1,6 +1,6 @@
 {
   "name": "readme-forge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generate polished README files from project metadata, with optional Gemini enhancement through environment variables.",
   "type": "module",
   "engines": {
@@ -17,17 +17,30 @@
   "bin": {
     "readme-forge": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "tsx src/cli.ts",
     "build": "tsc",
     "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run build && npm test"
   },
   "keywords": [
     "readme",
     "generator",
     "cli",
     "typescript",
+    "documentation",
+    "open-source",
+    "maintainers",
     "gemini"
   ],
   "author": "",
@@ -36,6 +49,6 @@
     "@types/node": "^24.0.0",
     "tsx": "^4.19.2",
     "typescript": "^6.0.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.8"
   }
 }
