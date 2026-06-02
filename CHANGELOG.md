@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 - 2026-06-02
+
+- Added numeric README quality scoring for `--check`.
+- Added detailed JSON quality reports with score, percentage, passed checks, and issues.
+- Added checks for contribution and security documentation when `CONTRIBUTING.md` or `SECURITY.md` exist.
+- Added CLI tests for scored quality output.
+
 ## 0.3.0 - 2026-06-01
 
 - Added `--diff` for reviewing generated README changes without overwriting files.

@@ -27,6 +27,13 @@ Check whether an existing README is missing common maintainer sections:
 npx github:danisantgry/readme-forge . --check
 ```
 
+Example:
+
+```text
+README quality score: 7/7 (100%)
+README quality check passed.
+```
+
 Review generated README changes as a diff before writing:
 
 ```bash
@@ -39,6 +46,7 @@ npx github:danisantgry/readme-forge . --diff
 - Generates setup, scripts, testing, structure, and license sections.
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
+- Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports diff reviews and JSON output for automation.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
@@ -91,6 +99,14 @@ Check README quality:
 npm run dev -- . --check
 ```
 
+The check command returns a numeric score and lists missing sections when the README needs work:
+
+```text
+README quality score: 5/7 (71%)
+missing-tests: Project has a test script, but README does not document testing.
+missing-security: Project has SECURITY.md, but README does not link or mention it.
+```
+
 Review changes without overwriting README:
 
 ```bash
@@ -103,6 +119,8 @@ Emit machine-readable output for automation:
 npm run dev -- . --dry-run --format json
 npm run dev -- . --check --format json
 ```
+
+The JSON check output includes `ok`, `quality.score`, `quality.maxScore`, `quality.percentage`, `quality.issues`, `quality.passedChecks`, and detected project facts.
 
 Use a template preset:
 
@@ -159,6 +177,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - recurring README updates before releases
 - contributor-friendly documentation reviews
 - machine-readable checks for automation and agent workflows
+- measurable README quality scoring for release gates
 - optional AI refinement without making AI required for the project
 
 ## Feedback Wanted
@@ -168,6 +187,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - README sections that should be checked by `--check`
 - ecosystem metadata that should be detected next
 - workflows that should consume `--format json`
+- scoring rules that should count toward README quality
 - generated output that feels too generic or misses important context
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
@@ -178,7 +198,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 - More framework detectors for Rust, Go, Python, and package-manager-specific workflows.
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
-- README quality checks for missing install/test/license sections.
+- Configurable README quality scoring profiles for different project types.
 
 ## Contributing
 

@@ -3,4 +3,18 @@ export type QualityIssue = {
     id: string;
     message: string;
 };
+export type QualityCheck = {
+    id: string;
+    message: string;
+    passed: boolean;
+};
+export type ReadmeQualityReport = {
+    score: number;
+    maxScore: number;
+    percentage: number;
+    issues: QualityIssue[];
+    passedChecks: string[];
+    checks: QualityCheck[];
+};
+export declare function assessReadmeQuality(readme: string, facts: ProjectFacts): ReadmeQualityReport;
 export declare function checkReadmeQuality(readme: string, facts: ProjectFacts): QualityIssue[];

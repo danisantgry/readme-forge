@@ -4,7 +4,7 @@ import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme, type TemplatePreset } from "./generator.js";
-import { checkReadmeQuality } from "./quality.js";
+import { assessReadmeQuality } from "./quality.js";
 
 type OutputFormat = "markdown" | "json";
 
@@ -69,19 +69,20 @@ async function main(): Promise<void> {
   const existing = await readFile(args.output, "utf8").catch(() => "");
 
   if (args.check) {
-    const issues = checkReadmeQuality(existing || readme, facts);
+    const report = assessReadmeQuality(existing || readme, facts);
     if (args.format === "json") {
-      console.log(JSON.stringify({ ok: issues.length === 0, issues, facts }, null, 2));
-      process.exitCode = issues.length ? 1 : 0;
+      console.log(JSON.stringify({ ok: report.issues.length === 0, quality: report, facts }, null, 2));
+      process.exitCode = report.issues.length ? 1 : 0;
       return;
     }
 
-    if (!issues.length) {
+    console.log(`README quality score: ${report.score}/${report.maxScore} (${report.percentage}%)`);
+    if (!report.issues.length) {
       console.log("README quality check passed.");
       return;
     }
 
-    for (const issue of issues) {
+    for (const issue of report.issues) {
       console.log(`${issue.id}: ${issue.message}`);
     }
     process.exitCode = 1;

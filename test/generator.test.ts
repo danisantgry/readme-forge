@@ -6,7 +6,7 @@ import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { analyzeProject } from "../src/analyzer.js";
 import { generateReadme } from "../src/generator.js";
-import { checkReadmeQuality } from "../src/quality.js";
+import { assessReadmeQuality, checkReadmeQuality } from "../src/quality.js";
 
 const exec = promisify(execFile);
 
@@ -43,7 +43,10 @@ describe("readme-forge", () => {
 
     const facts = await analyzeProject(root);
     const output = generateReadme(facts, "cli");
+    const report = assessReadmeQuality(output, facts);
     expect(output).toContain("command-line workflow");
+    expect(report.percentage).toBe(100);
+    expect(report.passedChecks).toContain("tests");
     expect(checkReadmeQuality(output, facts)).toHaveLength(0);
   });
 
@@ -74,5 +77,25 @@ describe("readme-forge", () => {
     const diffResult = await exec(process.execPath, ["node_modules/tsx/dist/cli.mjs", "src/cli.ts", root, "--diff"]);
     expect(diffResult.stdout).toContain("--- README.md");
     expect(diffResult.stdout).toContain("+ # json-demo");
+  });
+
+  it("returns a scored README quality report from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-check-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "check-demo",
+      description: "A check demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# check-demo\n\n## License\nMIT\n");
+
+    const result = await exec(process.execPath, ["node_modules/tsx/dist/cli.mjs", "src/cli.ts", root, "--check", "--format", "json"])
+      .catch((error: { stdout: string }) => error);
+    const parsed = JSON.parse(result.stdout) as { ok: boolean; quality: { score: number; maxScore: number; percentage: number; issues: { id: string }[] } };
+
+    expect(parsed.ok).toBe(false);
+    expect(parsed.quality.score).toBeLessThan(parsed.quality.maxScore);
+    expect(parsed.quality.percentage).toBeGreaterThan(0);
+    expect(parsed.quality.issues.map((issue) => issue.id)).toContain("missing-tests");
   });
 });

@@ -15,7 +15,7 @@ Primary maintainer
 Why does this repository qualify?
 
 ```text
-readme-forge helps open-source maintainers generate accurate README drafts from real project metadata. It supports offline generation, --check quality reports, --diff review, JSON automation output, template presets, optional AI refinement, contribution/security docs, examples, releases, and an active roadmap.
+readme-forge helps open-source maintainers generate accurate README drafts from real project metadata. It supports offline generation, numeric README quality scoring, --check quality reports, --diff review, JSON automation output, template presets, optional AI refinement, contribution/security docs, examples, releases, and an active roadmap.
 ```
 
 How will you use API credits?
@@ -27,5 +27,5 @@ I will use API credits to improve optional AI-assisted README refinement, test p
 Anything else?
 
 ```text
-I am actively building this as a maintainer-focused open-source tool. The project is public, MIT licensed, tested, released, and structured for outside contributions with issue templates, PR guidance, security policy, examples, roadmap issues, changelog, diff review, and automation-friendly JSON output.
+I am actively building this as a maintainer-focused open-source tool. The project is public, MIT licensed, tested, released, and structured for outside contributions with issue templates, PR guidance, security policy, examples, roadmap issues, changelog, diff review, scored README quality checks, and automation-friendly JSON output.
 ```
