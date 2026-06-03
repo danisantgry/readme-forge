@@ -6,17 +6,28 @@ import { generateWithGemini } from "./gemini.js";
 import { generateReadme } from "./generator.js";
 import { assessReadmeQuality } from "./quality.js";
 function parseArgs(argv) {
-    const root = path.resolve(argv.find((arg) => !arg.startsWith("--")) ?? ".");
     const outputIndex = argv.indexOf("--output");
     const templateIndex = argv.indexOf("--template");
     const formatIndex = argv.indexOf("--format");
+    const minScoreIndex = argv.indexOf("--min-score");
+    const optionValueIndexes = new Set([outputIndex, templateIndex, formatIndex, minScoreIndex]
+        .filter((index) => index >= 0)
+        .map((index) => index + 1));
+    const root = path.resolve(argv.find((arg, index) => !arg.startsWith("--") && !optionValueIndexes.has(index)) ?? ".");
     const template = templateIndex >= 0 ? argv[templateIndex + 1] : "auto";
     const format = formatIndex >= 0 ? argv[formatIndex + 1] : "markdown";
+    const minScore = minScoreIndex >= 0 ? Number(argv[minScoreIndex + 1]) : undefined;
     if (!["auto", "cli", "library", "web"].includes(template)) {
         throw new Error("--template must be one of: auto, cli, library, web");
     }
     if (!["markdown", "json"].includes(format)) {
         throw new Error("--format must be one of: markdown, json");
+    }
+    if (minScore !== undefined && (!Number.isInteger(minScore) || minScore < 0 || minScore > 100)) {
+        throw new Error("--min-score must be an integer between 0 and 100");
+    }
+    if (minScore !== undefined && !argv.includes("--check")) {
+        throw new Error("--min-score can only be used with --check");
     }
     return {
         root,
@@ -26,6 +37,7 @@ function parseArgs(argv) {
         diff: argv.includes("--diff"),
         dryRun: argv.includes("--dry-run"),
         format: format,
+        minScore,
         template: template
     };
 }
@@ -53,13 +65,18 @@ async function main() {
     const existing = await readFile(args.output, "utf8").catch(() => "");
     if (args.check) {
         const report = assessReadmeQuality(existing || readme, facts);
+        const passedMinimumScore = args.minScore === undefined || report.percentage >= args.minScore;
+        const ok = args.minScore === undefined ? report.issues.length === 0 : passedMinimumScore;
         if (args.format === "json") {
-            console.log(JSON.stringify({ ok: report.issues.length === 0, quality: report, facts }, null, 2));
-            process.exitCode = report.issues.length ? 1 : 0;
+            console.log(JSON.stringify({ ok, minimumScore: args.minScore, passedMinimumScore, quality: report, facts }, null, 2));
+            process.exitCode = ok ? 0 : 1;
             return;
         }
         console.log(`README quality score: ${report.score}/${report.maxScore} (${report.percentage}%)`);
-        if (!report.issues.length) {
+        if (args.minScore !== undefined) {
+            console.log(`Minimum score: ${args.minScore}%`);
+        }
+        if (ok) {
             console.log("README quality check passed.");
             return;
         }

@@ -27,10 +27,17 @@ Check whether an existing README is missing common maintainer sections:
 npx github:danisantgry/readme-forge . --check
 ```
 
+Require a minimum score for CI:
+
+```bash
+npx github:danisantgry/readme-forge . --check --min-score 90
+```
+
 Example:
 
 ```text
 README quality score: 7/7 (100%)
+Minimum score: 90%
 README quality check passed.
 ```
 
@@ -47,6 +54,7 @@ npx github:danisantgry/readme-forge . --diff
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
+- Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
@@ -107,6 +115,12 @@ missing-tests: Project has a test script, but README does not document testing.
 missing-security: Project has SECURITY.md, but README does not link or mention it.
 ```
 
+Use a minimum score gate:
+
+```bash
+npm run dev -- . --check --min-score 90
+```
+
 Review changes without overwriting README:
 
 ```bash
@@ -121,6 +135,12 @@ npm run dev -- . --check --format json
 ```
 
 The JSON check output includes `ok`, `quality.score`, `quality.maxScore`, `quality.percentage`, `quality.issues`, `quality.passedChecks`, and detected project facts.
+
+For CI, combine JSON output with a minimum score:
+
+```bash
+npm run dev -- . --check --min-score 90 --format json
+```
 
 Use a template preset:
 
@@ -149,6 +169,7 @@ set GEMINI_MODEL=gemini-2.5-flash-lite
 - `build`: compile TypeScript into `dist/`.
 - `test`: run the Vitest suite.
 - `lint`: type-check without emitting files.
+- `check:readme`: run the README quality gate at 90%.
 - `prepublishOnly`: validate lint, build, and tests before publication.
 
 ## Testing
@@ -157,9 +178,14 @@ set GEMINI_MODEL=gemini-2.5-flash-lite
 npm run lint
 npm run build
 npm test
+npm run check:readme
 npm audit
 npm pack --dry-run
 ```
+
+## GitHub Actions
+
+Use [`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md) for a ready-to-copy workflow that fails a job when the README quality score is below 90%. This repository dogfoods the same gate locally through `npm run check:readme`.
 
 ## Safety
 
@@ -178,6 +204,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - contributor-friendly documentation reviews
 - machine-readable checks for automation and agent workflows
 - measurable README quality scoring for release gates
+- GitHub Actions-ready quality gates for README regressions
 - optional AI refinement without making AI required for the project
 
 ## Feedback Wanted

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - 2026-06-03
+
+- Added `--min-score` for CI-friendly README quality gates.
+- Added `check:readme` npm script for local and automated validation.
+- Added a GitHub Actions recipe for running README quality gates on push and pull requests.
+- Added tests for minimum score pass/fail behavior.
+
 ## 0.4.0 - 2026-06-02
 
 - Added numeric README quality scoring for `--check`.

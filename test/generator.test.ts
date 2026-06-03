@@ -98,4 +98,59 @@ describe("readme-forge", () => {
     expect(parsed.quality.percentage).toBeGreaterThan(0);
     expect(parsed.quality.issues.map((issue) => issue.id)).toContain("missing-tests");
   });
+
+  it("supports minimum score gates for CI workflows", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-gate-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "gate-demo",
+      description: "A gate demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# gate-demo\n\n## License\nMIT\n");
+
+    const passingResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      root,
+      "--check",
+      "--min-score",
+      "40",
+      "--format",
+      "json"
+    ]);
+    const passing = JSON.parse(passingResult.stdout) as { ok: boolean; minimumScore: number; passedMinimumScore: boolean };
+    expect(passing.ok).toBe(true);
+    expect(passing.minimumScore).toBe(40);
+    expect(passing.passedMinimumScore).toBe(true);
+
+    const reorderedResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "--check",
+      "--min-score",
+      "40",
+      root,
+      "--format",
+      "json"
+    ]);
+    const reordered = JSON.parse(reorderedResult.stdout) as { ok: boolean; facts: { name: string } };
+    expect(reordered.ok).toBe(true);
+    expect(reordered.facts.name).toBe("gate-demo");
+
+    const failingResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      root,
+      "--check",
+      "--min-score",
+      "90",
+      "--format",
+      "json"
+    ]).catch((error: { stdout: string }) => error);
+    const failing = JSON.parse(failingResult.stdout) as { ok: boolean; minimumScore: number; passedMinimumScore: boolean };
+    expect(failing.ok).toBe(false);
+    expect(failing.minimumScore).toBe(90);
+    expect(failing.passedMinimumScore).toBe(false);
+  });
 });

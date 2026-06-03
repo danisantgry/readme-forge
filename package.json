@@ -1,6 +1,6 @@
 {
   "name": "readme-forge",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Generate polished README files from project metadata, with optional Gemini enhancement through environment variables.",
   "type": "module",
   "engines": {
@@ -31,6 +31,7 @@
     "build": "tsc",
     "test": "vitest run",
     "lint": "tsc --noEmit",
+    "check:readme": "tsx src/cli.ts . --check --min-score 90",
     "prepublishOnly": "npm run lint && npm run build && npm test"
   },
   "keywords": [
