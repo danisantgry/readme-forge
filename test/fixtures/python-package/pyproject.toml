@@ -1,0 +1,7 @@
+[project]
+name = "fixture-python-package"
+description = "A fixture Python package."
+license = "MIT"
+
+[project.optional-dependencies]
+test = ["pytest"]

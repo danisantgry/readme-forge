@@ -8,6 +8,28 @@ async function readJson(filePath) {
         return undefined;
     }
 }
+async function readText(filePath) {
+    try {
+        return await readFile(filePath, "utf8");
+    }
+    catch {
+        return "";
+    }
+}
+function readTomlString(source, key) {
+    return source.match(new RegExp(`^${key}\\s*=\\s*["']([^"']+)["']`, "m"))?.[1];
+}
+function readGoModuleName(source) {
+    const modulePath = source.match(/^module\s+(\S+)/m)?.[1];
+    return modulePath?.split("/").filter(Boolean).at(-1);
+}
+function firstText(...values) {
+    for (const value of values) {
+        if (typeof value === "string" && value.trim())
+            return value;
+    }
+    return undefined;
+}
 const ignoredEntries = new Set([".git", "node_modules", "dist", "coverage"]);
 async function listProjectEntries(root) {
     const entries = await readdir(root, { withFileTypes: true });
@@ -28,6 +50,9 @@ function detectPackageManager(files) {
 export async function analyzeProject(root) {
     const files = await listProjectEntries(root);
     const packageJson = await readJson(path.join(root, "package.json"));
+    const pyproject = files.includes("pyproject.toml") ? await readText(path.join(root, "pyproject.toml")) : "";
+    const cargoToml = files.includes("Cargo.toml") ? await readText(path.join(root, "Cargo.toml")) : "";
+    const goMod = files.includes("go.mod") ? await readText(path.join(root, "go.mod")) : "";
     const dependencies = {
         ...packageJson?.dependencies,
         ...packageJson?.devDependencies
@@ -50,13 +75,13 @@ export async function analyzeProject(root) {
         files.includes("go.mod") ? "Go" : undefined
     ].filter(Boolean);
     return {
-        name: String(packageJson?.name ?? path.basename(root)),
-        description: String(packageJson?.description ?? "A useful software project."),
+        name: firstText(packageJson?.name, readTomlString(pyproject, "name"), readTomlString(cargoToml, "name"), readGoModuleName(goMod)) ?? path.basename(root),
+        description: firstText(packageJson?.description, readTomlString(pyproject, "description"), readTomlString(cargoToml, "description")) ?? "A useful software project.",
         packageManager: detectPackageManager(files),
         languages,
         frameworks,
         scripts: packageJson?.scripts ?? {},
         files,
-        license: String(packageJson?.license ?? (files.includes("LICENSE") ? "See LICENSE" : ""))
+        license: firstText(packageJson?.license, readTomlString(pyproject, "license"), readTomlString(cargoToml, "license"), files.includes("LICENSE") ? "See LICENSE" : undefined) ?? ""
     };
 }

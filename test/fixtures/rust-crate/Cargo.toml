@@ -1,0 +1,6 @@
+[package]
+name = "fixture-rust-crate"
+version = "0.1.0"
+description = "A fixture Rust crate."
+license = "MIT"
+edition = "2021"

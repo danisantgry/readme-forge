@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0 - 2026-06-04
+
+- Added fixture-based regression coverage for TypeScript CLI, Vite web app, Python package, Rust crate, and Go module project shapes.
+- Added analyzer support for reading project name, description, and license from `pyproject.toml` and `Cargo.toml`.
+- Added analyzer support for deriving Go module names from `go.mod`.
+- Added fixture documentation for future ecosystem coverage.
+
 ## 0.5.0 - 2026-06-03
 
 - Added `--min-score` for CI-friendly README quality gates.

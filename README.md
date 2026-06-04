@@ -56,6 +56,7 @@ npx github:danisantgry/readme-forge . --diff
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
+- Includes fixture-based regression tests for TypeScript, Vite, Python, Rust, and Go project shapes.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
 - Designed for maintainer workflows where README updates should be repeatable, reviewable, and safe.
@@ -183,6 +184,8 @@ npm audit
 npm pack --dry-run
 ```
 
+The fixture regression suite is documented in [`docs/FIXTURES.md`](docs/FIXTURES.md).
+
 ## GitHub Actions
 
 Use [`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md) for a ready-to-copy workflow that fails a job when the README quality score is below 90%. This repository dogfoods the same gate locally through `npm run check:readme`.
@@ -205,6 +208,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - machine-readable checks for automation and agent workflows
 - measurable README quality scoring for release gates
 - GitHub Actions-ready quality gates for README regressions
+- fixture-based regression coverage for ecosystem detectors
 - optional AI refinement without making AI required for the project
 
 ## Feedback Wanted
@@ -222,7 +226,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 ## Roadmap
 
 - npm publication under the `readme-forge` package name.
-- More framework detectors for Rust, Go, Python, and package-manager-specific workflows.
+- More ecosystem fixtures and package-manager-specific workflows.
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
 - Configurable README quality scoring profiles for different project types.

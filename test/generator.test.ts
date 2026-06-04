@@ -9,6 +9,7 @@ import { generateReadme } from "../src/generator.js";
 import { assessReadmeQuality, checkReadmeQuality } from "../src/quality.js";
 
 const exec = promisify(execFile);
+const fixturesRoot = path.join(process.cwd(), "test", "fixtures");
 
 describe("readme-forge", () => {
   it("detects package metadata and generates a useful README", async () => {
@@ -57,6 +58,58 @@ describe("readme-forge", () => {
     const facts = await analyzeProject(root);
     expect(facts.languages).toContain("Rust");
     expect(facts.frameworks).toContain("Rust crate");
+  });
+
+  it.each([
+    {
+      fixture: "typescript-cli",
+      name: "fixture-ts-cli",
+      language: "TypeScript",
+      framework: undefined,
+      description: "A fixture command-line tool."
+    },
+    {
+      fixture: "vite-web",
+      name: "fixture-vite-web",
+      language: "TypeScript",
+      framework: "Vite",
+      description: "A fixture Vite web app."
+    },
+    {
+      fixture: "python-package",
+      name: "fixture-python-package",
+      language: "Python",
+      framework: "Python package",
+      description: "A fixture Python package."
+    },
+    {
+      fixture: "rust-crate",
+      name: "fixture-rust-crate",
+      language: "Rust",
+      framework: "Rust crate",
+      description: "A fixture Rust crate."
+    },
+    {
+      fixture: "go-module",
+      name: "fixture-go-module",
+      language: "Go",
+      framework: "Go module",
+      description: "A useful software project."
+    }
+  ])("generates stable README output for $fixture fixture", async ({ fixture, name, language, framework, description }) => {
+    const facts = await analyzeProject(path.join(fixturesRoot, fixture));
+    const readme = generateReadme(facts);
+    const quality = assessReadmeQuality(readme, facts);
+
+    expect(facts.name).toBe(name);
+    expect(facts.description).toBe(description);
+    expect(facts.languages).toContain(language);
+    if (framework) expect(facts.frameworks).toContain(framework);
+    expect(readme).toContain(`# ${name}`);
+    expect(readme).toContain(description);
+    expect(readme).toContain("## Getting Started");
+    expect(readme).toContain("## Testing");
+    expect(quality.percentage).toBe(100);
   });
 
   it("supports JSON dry runs and diff review from the CLI", async () => {
