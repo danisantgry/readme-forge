@@ -5,6 +5,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { analyzeProject } from "../src/analyzer.js";
+import { parseConfig } from "../src/config.js";
 import { generateReadme } from "../src/generator.js";
 import { assessReadmeQuality, checkReadmeQuality } from "../src/quality.js";
 
@@ -205,5 +206,61 @@ describe("readme-forge", () => {
     expect(failing.ok).toBe(false);
     expect(failing.minimumScore).toBe(90);
     expect(failing.passedMinimumScore).toBe(false);
+  });
+
+  it("parses and validates readme-forge config files", () => {
+    const config = parseConfig(JSON.stringify({
+      template: "cli",
+      output: "README.generated.md",
+      minScore: 85,
+      format: "json",
+      ai: false
+    }));
+
+    expect(config.template).toBe("cli");
+    expect(config.output).toBe("README.generated.md");
+    expect(config.minScore).toBe(85);
+    expect(config.format).toBe("json");
+  });
+
+  it("uses config defaults while letting CLI flags override them", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-config-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "config-demo",
+      description: "A config demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "readme-forge.config.json"), JSON.stringify({
+      format: "json",
+      minScore: 40,
+      template: "library"
+    }));
+    await writeFile(path.join(root, "README.md"), "# config-demo\n\n## License\nMIT\n");
+
+    const configuredResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      root,
+      "--check"
+    ]);
+    const configured = JSON.parse(configuredResult.stdout) as { ok: boolean; minimumScore: number; quality: { percentage: number } };
+    expect(configured.ok).toBe(true);
+    expect(configured.minimumScore).toBe(40);
+    expect(configured.quality.percentage).toBeGreaterThanOrEqual(40);
+
+    const overrideResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      root,
+      "--check",
+      "--min-score",
+      "90",
+      "--format",
+      "json"
+    ]).catch((error: { stdout: string }) => error);
+    const override = JSON.parse(overrideResult.stdout) as { ok: boolean; minimumScore: number };
+    expect(override.ok).toBe(false);
+    expect(override.minimumScore).toBe(90);
   });
 });

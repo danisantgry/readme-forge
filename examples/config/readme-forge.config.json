@@ -1,0 +1,7 @@
+{
+  "template": "cli",
+  "output": "README.generated.md",
+  "format": "json",
+  "minScore": 90,
+  "ai": false
+}

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 - 2026-06-06
+
+- Added `readme-forge.config.json` support for repeatable repository defaults.
+- Added `--config` for custom configuration file paths.
+- Added typed config validation and CLI-over-config precedence.
+- Added tests for config parsing, config-driven checks, and flag overrides.
+- Added configuration documentation and an example config file.
+
 ## 0.6.0 - 2026-06-04
 
 - Added fixture-based regression coverage for TypeScript CLI, Vite web app, Python package, Rust crate, and Go module project shapes.

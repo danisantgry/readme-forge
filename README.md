@@ -53,6 +53,7 @@ npx github:danisantgry/readme-forge . --diff
 - Generates setup, scripts, testing, structure, and license sections.
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
+- Supports `readme-forge.config.json` for repeatable repository defaults.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -151,6 +152,18 @@ npm run dev -- . --template library
 npm run dev -- . --template web
 ```
 
+Use repository defaults:
+
+```json
+{
+  "template": "cli",
+  "minScore": 90,
+  "format": "json"
+}
+```
+
+See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for supported config fields and precedence rules.
+
 Use Gemini refinement:
 
 ```bash
@@ -208,6 +221,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - machine-readable checks for automation and agent workflows
 - measurable README quality scoring for release gates
 - GitHub Actions-ready quality gates for README regressions
+- versioned configuration for teams and repeatable CI defaults
 - fixture-based regression coverage for ecosystem detectors
 - optional AI refinement without making AI required for the project
 
@@ -219,6 +233,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - ecosystem metadata that should be detected next
 - workflows that should consume `--format json`
 - scoring rules that should count toward README quality
+- config fields that would make repository adoption easier
 - generated output that feels too generic or misses important context
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).

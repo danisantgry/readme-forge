@@ -20,7 +20,7 @@ This document keeps adoption work honest and measurable. The goal is to earn rea
 ## Feedback Request
 
 ```text
-I built readme-forge, a small TypeScript CLI that generates README drafts from real project metadata. It works offline, has optional Gemini refinement, and includes scored --check reports with --min-score gates for CI. I'm looking for honest feedback from maintainers on what README sections should be detected next.
+I built readme-forge, a small TypeScript CLI that generates README drafts from real project metadata. It works offline, has optional Gemini refinement, supports readme-forge.config.json defaults, and includes scored --check reports with --min-score gates for CI. I'm looking for honest feedback from maintainers on what README sections should be detected next.
 
 Repo: https://github.com/danisantgry/readme-forge
 ```
@@ -34,6 +34,7 @@ Repo: https://github.com/danisantgry/readme-forge
 - number of supported ecosystems and fixtures
 - successful public `npx github:danisantgry/readme-forge` smoke tests
 - passing README quality gate on push and pull requests
+- repositories using a committed `readme-forge.config.json`
 
 ## Do Not Do
 

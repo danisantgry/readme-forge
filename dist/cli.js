@@ -2,21 +2,31 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
+import { loadConfig } from "./config.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme } from "./generator.js";
 import { assessReadmeQuality } from "./quality.js";
-function parseArgs(argv) {
-    const outputIndex = argv.indexOf("--output");
-    const templateIndex = argv.indexOf("--template");
-    const formatIndex = argv.indexOf("--format");
-    const minScoreIndex = argv.indexOf("--min-score");
-    const optionValueIndexes = new Set([outputIndex, templateIndex, formatIndex, minScoreIndex]
-        .filter((index) => index >= 0)
-        .map((index) => index + 1));
-    const root = path.resolve(argv.find((arg, index) => !arg.startsWith("--") && !optionValueIndexes.has(index)) ?? ".");
-    const template = templateIndex >= 0 ? argv[templateIndex + 1] : "auto";
-    const format = formatIndex >= 0 ? argv[formatIndex + 1] : "markdown";
-    const minScore = minScoreIndex >= 0 ? Number(argv[minScoreIndex + 1]) : undefined;
+const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--template"]);
+function getOption(argv, name) {
+    const index = argv.indexOf(name);
+    return index >= 0 ? argv[index + 1] : undefined;
+}
+function hasOption(argv, name) {
+    return argv.includes(name);
+}
+function resolveRoot(argv) {
+    const optionValueIndexes = new Set(argv
+        .map((arg, index) => (optionNames.has(arg) ? index + 1 : -1))
+        .filter((index) => index >= 0));
+    return path.resolve(argv.find((arg, index) => !arg.startsWith("--") && !optionValueIndexes.has(index)) ?? ".");
+}
+async function parseArgs(argv) {
+    const root = resolveRoot(argv);
+    const config = await loadConfig(root, getOption(argv, "--config"));
+    const template = getOption(argv, "--template") ?? config.template ?? "auto";
+    const format = getOption(argv, "--format") ?? config.format ?? "markdown";
+    const minScoreOption = getOption(argv, "--min-score");
+    const minScore = minScoreOption !== undefined ? Number(minScoreOption) : config.minScore;
     if (!["auto", "cli", "library", "web"].includes(template)) {
         throw new Error("--template must be one of: auto, cli, library, web");
     }
@@ -26,16 +36,16 @@ function parseArgs(argv) {
     if (minScore !== undefined && (!Number.isInteger(minScore) || minScore < 0 || minScore > 100)) {
         throw new Error("--min-score must be an integer between 0 and 100");
     }
-    if (minScore !== undefined && !argv.includes("--check")) {
+    if (minScoreOption !== undefined && !hasOption(argv, "--check")) {
         throw new Error("--min-score can only be used with --check");
     }
     return {
         root,
-        output: path.resolve(outputIndex >= 0 ? argv[outputIndex + 1] : path.join(root, "README.md")),
-        ai: argv.includes("--ai"),
-        check: argv.includes("--check"),
-        diff: argv.includes("--diff"),
-        dryRun: argv.includes("--dry-run"),
+        output: path.resolve(getOption(argv, "--output") ?? (config.output ? path.resolve(root, config.output) : path.join(root, "README.md"))),
+        ai: hasOption(argv, "--ai") || config.ai === true,
+        check: hasOption(argv, "--check"),
+        diff: hasOption(argv, "--diff"),
+        dryRun: hasOption(argv, "--dry-run"),
         format: format,
         minScore,
         template: template
@@ -59,7 +69,7 @@ function createLineDiff(existing, generated) {
     return output.length === 2 ? "README is already in sync with generated output." : output.join("\n");
 }
 async function main() {
-    const args = parseArgs(process.argv.slice(2));
+    const args = await parseArgs(process.argv.slice(2));
     const facts = await analyzeProject(args.root);
     const readme = args.ai ? await generateWithGemini(facts) : generateReadme(facts, args.template);
     const existing = await readFile(args.output, "utf8").catch(() => "");
