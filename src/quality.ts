@@ -11,7 +11,10 @@ export type QualityCheck = {
   passed: boolean;
 };
 
+export type QualityProfile = "basic" | "standard" | "maintainer" | "strict";
+
 export type ReadmeQualityReport = {
+  profile: QualityProfile;
   score: number;
   maxScore: number;
   percentage: number;
@@ -20,9 +23,16 @@ export type ReadmeQualityReport = {
   checks: QualityCheck[];
 };
 
-export function assessReadmeQuality(readme: string, facts: ProjectFacts): ReadmeQualityReport {
+const profileChecks: Record<QualityProfile, string[]> = {
+  basic: ["title", "install", "license"],
+  standard: ["title", "install", "scripts", "tests", "license"],
+  maintainer: ["title", "install", "scripts", "tests", "license", "contributing", "security"],
+  strict: ["title", "install", "scripts", "tests", "license", "contributing", "security", "changelog"]
+};
+
+export function assessReadmeQuality(readme: string, facts: ProjectFacts, profile: QualityProfile = "maintainer"): ReadmeQualityReport {
   const has = (pattern: RegExp) => pattern.test(readme);
-  const checks: QualityCheck[] = [
+  const allChecks: QualityCheck[] = [
     {
       id: "title",
       message: "README has a top-level title.",
@@ -59,8 +69,15 @@ export function assessReadmeQuality(readme: string, facts: ProjectFacts): Readme
       id: "security",
       message: "README points security researchers to a security policy.",
       passed: facts.files.includes("SECURITY.md") ? has(/##\s+Security/i) || /SECURITY\.md/i.test(readme) : true
+    },
+    {
+      id: "changelog",
+      message: "README points readers to changelog or release notes.",
+      passed: facts.files.includes("CHANGELOG.md") ? has(/##\s+Changelog/i) || /CHANGELOG\.md|release notes/i.test(readme) : true
     }
   ];
+  const selectedIds = new Set(profileChecks[profile]);
+  const checks = allChecks.filter((check) => selectedIds.has(check.id));
 
   const issueMessages: Record<string, string> = {
     title: "README is missing a top-level title.",
@@ -69,7 +86,8 @@ export function assessReadmeQuality(readme: string, facts: ProjectFacts): Readme
     tests: "Project has a test script, but README does not document testing.",
     license: "README is missing a license section.",
     contributing: "Project has CONTRIBUTING.md, but README does not link or mention it.",
-    security: "Project has SECURITY.md, but README does not link or mention it."
+    security: "Project has SECURITY.md, but README does not link or mention it.",
+    changelog: "Project has CHANGELOG.md, but README does not link or mention changelog or release notes."
   };
 
   const issues = checks
@@ -79,6 +97,7 @@ export function assessReadmeQuality(readme: string, facts: ProjectFacts): Readme
   const maxScore = checks.length;
 
   return {
+    profile,
     score,
     maxScore,
     percentage: Math.round((score / maxScore) * 100),

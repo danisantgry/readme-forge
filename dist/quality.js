@@ -1,6 +1,12 @@
-export function assessReadmeQuality(readme, facts) {
+const profileChecks = {
+    basic: ["title", "install", "license"],
+    standard: ["title", "install", "scripts", "tests", "license"],
+    maintainer: ["title", "install", "scripts", "tests", "license", "contributing", "security"],
+    strict: ["title", "install", "scripts", "tests", "license", "contributing", "security", "changelog"]
+};
+export function assessReadmeQuality(readme, facts, profile = "maintainer") {
     const has = (pattern) => pattern.test(readme);
-    const checks = [
+    const allChecks = [
         {
             id: "title",
             message: "README has a top-level title.",
@@ -37,8 +43,15 @@ export function assessReadmeQuality(readme, facts) {
             id: "security",
             message: "README points security researchers to a security policy.",
             passed: facts.files.includes("SECURITY.md") ? has(/##\s+Security/i) || /SECURITY\.md/i.test(readme) : true
+        },
+        {
+            id: "changelog",
+            message: "README points readers to changelog or release notes.",
+            passed: facts.files.includes("CHANGELOG.md") ? has(/##\s+Changelog/i) || /CHANGELOG\.md|release notes/i.test(readme) : true
         }
     ];
+    const selectedIds = new Set(profileChecks[profile]);
+    const checks = allChecks.filter((check) => selectedIds.has(check.id));
     const issueMessages = {
         title: "README is missing a top-level title.",
         install: "README is missing installation or getting started instructions.",
@@ -46,7 +59,8 @@ export function assessReadmeQuality(readme, facts) {
         tests: "Project has a test script, but README does not document testing.",
         license: "README is missing a license section.",
         contributing: "Project has CONTRIBUTING.md, but README does not link or mention it.",
-        security: "Project has SECURITY.md, but README does not link or mention it."
+        security: "Project has SECURITY.md, but README does not link or mention it.",
+        changelog: "Project has CHANGELOG.md, but README does not link or mention changelog or release notes."
     };
     const issues = checks
         .filter((check) => !check.passed)
@@ -54,6 +68,7 @@ export function assessReadmeQuality(readme, facts) {
     const score = checks.filter((check) => check.passed).length;
     const maxScore = checks.length;
     return {
+        profile,
         score,
         maxScore,
         percentage: Math.round((score / maxScore) * 100),

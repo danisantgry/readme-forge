@@ -6,7 +6,7 @@ import { loadConfig } from "./config.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme } from "./generator.js";
 import { assessReadmeQuality } from "./quality.js";
-const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--template"]);
+const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--template"]);
 function getOption(argv, name) {
     const index = argv.indexOf(name);
     return index >= 0 ? argv[index + 1] : undefined;
@@ -25,6 +25,7 @@ async function parseArgs(argv) {
     const config = await loadConfig(root, getOption(argv, "--config"));
     const template = getOption(argv, "--template") ?? config.template ?? "auto";
     const format = getOption(argv, "--format") ?? config.format ?? "markdown";
+    const profile = getOption(argv, "--profile") ?? config.profile ?? "maintainer";
     const minScoreOption = getOption(argv, "--min-score");
     const minScore = minScoreOption !== undefined ? Number(minScoreOption) : config.minScore;
     if (!["auto", "cli", "library", "web"].includes(template)) {
@@ -32,6 +33,9 @@ async function parseArgs(argv) {
     }
     if (!["markdown", "json"].includes(format)) {
         throw new Error("--format must be one of: markdown, json");
+    }
+    if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
+        throw new Error("--profile must be one of: basic, standard, maintainer, strict");
     }
     if (minScore !== undefined && (!Number.isInteger(minScore) || minScore < 0 || minScore > 100)) {
         throw new Error("--min-score must be an integer between 0 and 100");
@@ -48,6 +52,7 @@ async function parseArgs(argv) {
         dryRun: hasOption(argv, "--dry-run"),
         format: format,
         minScore,
+        profile: profile,
         template: template
     };
 }
@@ -74,7 +79,7 @@ async function main() {
     const readme = args.ai ? await generateWithGemini(facts) : generateReadme(facts, args.template);
     const existing = await readFile(args.output, "utf8").catch(() => "");
     if (args.check) {
-        const report = assessReadmeQuality(existing || readme, facts);
+        const report = assessReadmeQuality(existing || readme, facts, args.profile);
         const passedMinimumScore = args.minScore === undefined || report.percentage >= args.minScore;
         const ok = args.minScore === undefined ? report.issues.length === 0 : passedMinimumScore;
         if (args.format === "json") {
@@ -83,6 +88,7 @@ async function main() {
             return;
         }
         console.log(`README quality score: ${report.score}/${report.maxScore} (${report.percentage}%)`);
+        console.log(`Profile: ${report.profile}`);
         if (args.minScore !== undefined) {
             console.log(`Minimum score: ${args.minScore}%`);
         }

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 const validTemplates = new Set(["auto", "cli", "library", "web"]);
 const validFormats = new Set(["markdown", "json"]);
+const validProfiles = new Set(["basic", "standard", "maintainer", "strict"]);
 function assertBoolean(value, key) {
     if (value !== undefined && typeof value !== "boolean") {
         throw new Error(`Config field "${key}" must be a boolean`);
@@ -32,6 +33,7 @@ export function parseConfig(source, configPath = "readme-forge.config.json") {
     assertBoolean(config.ai, "ai");
     assertString(config.format, "format");
     assertString(config.output, "output");
+    assertString(config.profile, "profile");
     assertString(config.template, "template");
     assertMinScore(config.minScore);
     if (config.template !== undefined && !validTemplates.has(config.template)) {
@@ -40,11 +42,15 @@ export function parseConfig(source, configPath = "readme-forge.config.json") {
     if (config.format !== undefined && !validFormats.has(config.format)) {
         throw new Error('Config field "format" must be one of: markdown, json');
     }
+    if (config.profile !== undefined && !validProfiles.has(config.profile)) {
+        throw new Error('Config field "profile" must be one of: basic, standard, maintainer, strict');
+    }
     return {
         ai: config.ai,
         format: config.format,
         minScore: config.minScore,
         output: config.output,
+        profile: config.profile,
         template: config.template
     };
 }

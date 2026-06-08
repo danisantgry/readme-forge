@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -153,6 +153,29 @@ describe("readme-forge", () => {
     expect(parsed.quality.issues.map((issue) => issue.id)).toContain("missing-tests");
   });
 
+  it("supports quality profiles with different check depth", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-profile-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "profile-demo",
+      description: "A profile demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "CONTRIBUTING.md"), "# Contributing\n");
+    await writeFile(path.join(root, "SECURITY.md"), "# Security\n");
+    await writeFile(path.join(root, "CHANGELOG.md"), "# Changelog\n");
+    await writeFile(path.join(root, "README.md"), "# profile-demo\n\n## Getting Started\nnpm install\n\n## License\nMIT\n");
+
+    const facts = await analyzeProject(root);
+    const readme = await readFile(path.join(root, "README.md"), "utf8");
+    const basic = assessReadmeQuality(readme, facts, "basic");
+    const strict = assessReadmeQuality(readme, facts, "strict");
+
+    expect(basic.percentage).toBe(100);
+    expect(strict.issues.map((issue) => issue.id)).toContain("missing-changelog");
+    expect(strict.maxScore).toBeGreaterThan(basic.maxScore);
+  });
+
   it("supports minimum score gates for CI workflows", async () => {
     const root = await mkdir(path.join(os.tmpdir(), `readme-forge-gate-${Date.now()}-${Math.random()}`), { recursive: true });
     await writeFile(path.join(root, "package.json"), JSON.stringify({
@@ -214,6 +237,7 @@ describe("readme-forge", () => {
       output: "README.generated.md",
       minScore: 85,
       format: "json",
+      profile: "strict",
       ai: false
     }));
 
@@ -221,6 +245,7 @@ describe("readme-forge", () => {
     expect(config.output).toBe("README.generated.md");
     expect(config.minScore).toBe(85);
     expect(config.format).toBe("json");
+    expect(config.profile).toBe("strict");
   });
 
   it("uses config defaults while letting CLI flags override them", async () => {
@@ -234,6 +259,7 @@ describe("readme-forge", () => {
     await writeFile(path.join(root, "readme-forge.config.json"), JSON.stringify({
       format: "json",
       minScore: 40,
+      profile: "standard",
       template: "library"
     }));
     await writeFile(path.join(root, "README.md"), "# config-demo\n\n## License\nMIT\n");
@@ -244,9 +270,10 @@ describe("readme-forge", () => {
       root,
       "--check"
     ]);
-    const configured = JSON.parse(configuredResult.stdout) as { ok: boolean; minimumScore: number; quality: { percentage: number } };
+    const configured = JSON.parse(configuredResult.stdout) as { ok: boolean; minimumScore: number; quality: { percentage: number; profile: string } };
     expect(configured.ok).toBe(true);
     expect(configured.minimumScore).toBe(40);
+    expect(configured.quality.profile).toBe("standard");
     expect(configured.quality.percentage).toBeGreaterThanOrEqual(40);
 
     const overrideResult = await exec(process.execPath, [

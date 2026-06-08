@@ -9,6 +9,7 @@ CLI flags always override config values.
 ```json
 {
   "template": "cli",
+  "profile": "maintainer",
   "output": "README.generated.md",
   "format": "json",
   "minScore": 90,
@@ -19,6 +20,7 @@ CLI flags always override config values.
 ## Fields
 
 - `template`: one of `auto`, `cli`, `library`, or `web`.
+- `profile`: one of `basic`, `standard`, `maintainer`, or `strict`.
 - `output`: README output path, resolved relative to the project root.
 - `format`: one of `markdown` or `json`.
 - `minScore`: integer from 0 to 100, used by `--check`.
@@ -50,3 +52,10 @@ With this config:
 ```
 
 the command emits machine-readable output and fails when the README score is below 90%.
+
+## Quality Profiles
+
+- `basic`: title, setup, and license.
+- `standard`: `basic` plus scripts and testing.
+- `maintainer`: `standard` plus contribution and security policy links when those files exist. This is the default.
+- `strict`: `maintainer` plus changelog or release-notes coverage when `CHANGELOG.md` exists.

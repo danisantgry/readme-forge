@@ -54,6 +54,7 @@ npx github:danisantgry/readme-forge . --diff
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
 - Supports `readme-forge.config.json` for repeatable repository defaults.
+- Supports `basic`, `standard`, `maintainer`, and `strict` quality profiles.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -123,6 +124,12 @@ Use a minimum score gate:
 npm run dev -- . --check --min-score 90
 ```
 
+Use a quality profile:
+
+```bash
+npm run dev -- . --check --profile strict
+```
+
 Review changes without overwriting README:
 
 ```bash
@@ -157,6 +164,7 @@ Use repository defaults:
 ```json
 {
   "template": "cli",
+  "profile": "maintainer",
   "minScore": 90,
   "format": "json"
 }
@@ -222,6 +230,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - measurable README quality scoring for release gates
 - GitHub Actions-ready quality gates for README regressions
 - versioned configuration for teams and repeatable CI defaults
+- profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
 - optional AI refinement without making AI required for the project
 
@@ -234,6 +243,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - workflows that should consume `--format json`
 - scoring rules that should count toward README quality
 - config fields that would make repository adoption easier
+- profile rules that should be stricter or more forgiving
 - generated output that feels too generic or misses important context
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
@@ -244,7 +254,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 - More ecosystem fixtures and package-manager-specific workflows.
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
-- Configurable README quality scoring profiles for different project types.
+- More configurable README quality scoring profiles for different project types.
 
 ## Contributing
 

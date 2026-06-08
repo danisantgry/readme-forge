@@ -8,7 +8,9 @@ export type QualityCheck = {
     message: string;
     passed: boolean;
 };
+export type QualityProfile = "basic" | "standard" | "maintainer" | "strict";
 export type ReadmeQualityReport = {
+    profile: QualityProfile;
     score: number;
     maxScore: number;
     percentage: number;
@@ -16,5 +18,5 @@ export type ReadmeQualityReport = {
     passedChecks: string[];
     checks: QualityCheck[];
 };
-export declare function assessReadmeQuality(readme: string, facts: ProjectFacts): ReadmeQualityReport;
+export declare function assessReadmeQuality(readme: string, facts: ProjectFacts, profile?: QualityProfile): ReadmeQualityReport;
 export declare function checkReadmeQuality(readme: string, facts: ProjectFacts): QualityIssue[];

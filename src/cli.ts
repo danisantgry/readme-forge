@@ -5,7 +5,7 @@ import { analyzeProject } from "./analyzer.js";
 import { loadConfig, type OutputFormat } from "./config.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme, type TemplatePreset } from "./generator.js";
-import { assessReadmeQuality } from "./quality.js";
+import { assessReadmeQuality, type QualityProfile } from "./quality.js";
 
 type Args = {
   root: string;
@@ -16,10 +16,11 @@ type Args = {
   dryRun: boolean;
   format: OutputFormat;
   minScore?: number;
+  profile: QualityProfile;
   template: TemplatePreset;
 };
 
-const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--template"]);
+const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--template"]);
 
 function getOption(argv: string[], name: string): string | undefined {
   const index = argv.indexOf(name);
@@ -45,6 +46,7 @@ async function parseArgs(argv: string[]): Promise<Args> {
   const config = await loadConfig(root, getOption(argv, "--config"));
   const template = getOption(argv, "--template") ?? config.template ?? "auto";
   const format = getOption(argv, "--format") ?? config.format ?? "markdown";
+  const profile = getOption(argv, "--profile") ?? config.profile ?? "maintainer";
   const minScoreOption = getOption(argv, "--min-score");
   const minScore = minScoreOption !== undefined ? Number(minScoreOption) : config.minScore;
   if (!["auto", "cli", "library", "web"].includes(template)) {
@@ -52,6 +54,9 @@ async function parseArgs(argv: string[]): Promise<Args> {
   }
   if (!["markdown", "json"].includes(format)) {
     throw new Error("--format must be one of: markdown, json");
+  }
+  if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
+    throw new Error("--profile must be one of: basic, standard, maintainer, strict");
   }
   if (minScore !== undefined && (!Number.isInteger(minScore) || minScore < 0 || minScore > 100)) {
     throw new Error("--min-score must be an integer between 0 and 100");
@@ -69,6 +74,7 @@ async function parseArgs(argv: string[]): Promise<Args> {
     dryRun: hasOption(argv, "--dry-run"),
     format: format as OutputFormat,
     minScore,
+    profile: profile as QualityProfile,
     template: template as TemplatePreset
   };
 }
@@ -97,7 +103,7 @@ async function main(): Promise<void> {
   const existing = await readFile(args.output, "utf8").catch(() => "");
 
   if (args.check) {
-    const report = assessReadmeQuality(existing || readme, facts);
+    const report = assessReadmeQuality(existing || readme, facts, args.profile);
     const passedMinimumScore = args.minScore === undefined || report.percentage >= args.minScore;
     const ok = args.minScore === undefined ? report.issues.length === 0 : passedMinimumScore;
     if (args.format === "json") {
@@ -107,6 +113,7 @@ async function main(): Promise<void> {
     }
 
     console.log(`README quality score: ${report.score}/${report.maxScore} (${report.percentage}%)`);
+    console.log(`Profile: ${report.profile}`);
     if (args.minScore !== undefined) {
       console.log(`Minimum score: ${args.minScore}%`);
     }

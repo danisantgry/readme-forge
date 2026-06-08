@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 - 2026-06-08
+
+- Added README quality profiles: `basic`, `standard`, `maintainer`, and `strict`.
+- Added `--profile` for CLI-driven quality checks.
+- Added `profile` support in `readme-forge.config.json`.
+- Added strict changelog coverage checks when `CHANGELOG.md` exists.
+- Added tests for profile depth and config-driven profile selection.
+
 ## 0.7.0 - 2026-06-06
 
 - Added `readme-forge.config.json` support for repeatable repository defaults.
