@@ -21,6 +21,17 @@ function presetLine(preset: Exclude<TemplatePreset, "auto">): string {
   return "Documents installation, usage, testing, and project structure for library consumers.";
 }
 
+function workspaceSection(facts: ProjectFacts): string {
+  if (!facts.workspaces) return "";
+  const packages = facts.workspaces.packages.length
+    ? facts.workspaces.packages
+      .map((workspacePackage) => `- \`${workspacePackage.name}\` at \`${workspacePackage.path}\`${workspacePackage.description ? `: ${workspacePackage.description}` : ""}`)
+      .join("\n")
+    : "- No package manifests were found for the configured workspace patterns.";
+
+  return `\n## Workspace Packages\n\nPackage manager: \`${facts.workspaces.manager}\`\n\nPatterns: ${facts.workspaces.patterns.map((pattern) => `\`${pattern}\``).join(", ")}\n\n${packages}\n`;
+}
+
 export function generateReadme(facts: ProjectFacts, preset: TemplatePreset = "auto"): string {
   const scripts = Object.keys(facts.scripts);
   const selectedPreset = inferPreset(facts, preset);
@@ -36,6 +47,7 @@ ${facts.description}
 
 - Built with ${facts.languages.length ? facts.languages.join(", ") : "a lightweight project structure"}.
 - ${facts.frameworks.length ? `Uses ${facts.frameworks.join(", ")}.` : "Keeps dependencies focused and easy to inspect."}
+- ${facts.workspaces ? `Includes ${facts.workspaces.packages.length} workspace package${facts.workspaces.packages.length === 1 ? "" : "s"}.` : "Keeps the repository layout straightforward to scan."}
 - Includes clear setup, run, and test instructions.
 - ${presetLine(selectedPreset)}
 
@@ -55,6 +67,7 @@ ${scripts.length ? scripts.map((script) => `- \`${script}\`: \`${facts.scripts[s
 \`\`\`bash
 ${test}
 \`\`\`
+${workspaceSection(facts)}
 
 ## Project Structure
 

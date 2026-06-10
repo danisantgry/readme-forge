@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/core",
+  "description": "Shared workspace library.",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  }
+}

@@ -11,6 +11,8 @@ These fixtures protect the analyzer, generator, and README quality score from re
 - `python-package`: Python package metadata from `pyproject.toml`.
 - `rust-crate`: Rust crate metadata from `Cargo.toml`.
 - `go-module`: Go module metadata from `go.mod`.
+- `npm-workspace`: npm workspace metadata from `package.json`.
+- `pnpm-workspace`: pnpm workspace metadata from `pnpm-workspace.yaml`.
 
 ## What Tests Assert
 
@@ -18,6 +20,7 @@ The fixture tests verify that each project:
 
 - produces the expected project name
 - detects the expected language and framework marker
+- detects workspace manager, patterns, and package summaries when applicable
 - generates a README with setup and testing sections
 - produces a 100% README quality score for generated output
 

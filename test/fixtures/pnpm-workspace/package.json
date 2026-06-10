@@ -1,0 +1,9 @@
+{
+  "name": "fixture-pnpm-workspace",
+  "description": "A fixture pnpm workspace.",
+  "license": "MIT",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  }
+}

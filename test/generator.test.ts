@@ -61,6 +61,31 @@ describe("readme-forge", () => {
     expect(facts.frameworks).toContain("Rust crate");
   });
 
+  it("detects package.json workspaces and summarizes workspace packages", async () => {
+    const facts = await analyzeProject(path.join(fixturesRoot, "npm-workspace"));
+    const readme = generateReadme(facts);
+
+    expect(facts.packageManager).toBe("npm");
+    expect(facts.workspaces?.manager).toBe("npm");
+    expect(facts.workspaces?.patterns).toEqual(["packages/*", "apps/*"]);
+    expect(facts.workspaces?.packages.map((workspacePackage) => workspacePackage.name)).toEqual(["@fixture/core", "@fixture/web"]);
+    expect(readme).toContain("## Workspace Packages");
+    expect(readme).toContain("`@fixture/core` at `packages/core`");
+    expect(readme).toContain("`@fixture/web` at `apps/web`");
+  });
+
+  it("detects pnpm workspaces from pnpm-workspace.yaml", async () => {
+    const facts = await analyzeProject(path.join(fixturesRoot, "pnpm-workspace"));
+    const readme = generateReadme(facts);
+
+    expect(facts.packageManager).toBe("pnpm");
+    expect(facts.workspaces?.manager).toBe("pnpm");
+    expect(facts.workspaces?.patterns).toEqual(["packages/*", "tools/*"]);
+    expect(facts.workspaces?.packages.map((workspacePackage) => workspacePackage.name)).toEqual(["@fixture/ui", "@fixture/cli"]);
+    expect(readme).toContain("Package manager: `pnpm`");
+    expect(readme).toContain("Patterns: `packages/*`, `tools/*`");
+  });
+
   it.each([
     {
       fixture: "typescript-cli",

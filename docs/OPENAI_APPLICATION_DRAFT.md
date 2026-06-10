@@ -15,7 +15,7 @@ Primary maintainer
 Why does this repository qualify?
 
 ```text
-readme-forge helps open-source maintainers generate accurate README drafts from real project metadata. It supports offline generation, versioned repository configuration, profile-based README quality scoring, minimum score gates for CI, fixture-based regression coverage, --check quality reports, --diff review, JSON automation output, template presets, optional AI refinement, contribution/security docs, examples, releases, and an active roadmap.
+readme-forge helps open-source maintainers generate accurate README drafts from real project metadata. It supports offline generation, workspace summaries for monorepos, versioned repository configuration, profile-based README quality scoring, minimum score gates for CI, fixture-based regression coverage, --check quality reports, --diff review, JSON automation output, template presets, optional AI refinement, contribution/security docs, examples, releases, and an active roadmap.
 ```
 
 How will you use API credits?

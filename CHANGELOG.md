@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0 - 2026-06-09
+
+- Added detection for npm, pnpm, and yarn workspace repositories.
+- Added workspace package summaries for simple `packages/*`, `apps/*`, and similar one-level patterns.
+- Added README generation for workspace package lists.
+- Added fixtures and tests for `package.json` workspaces and `pnpm-workspace.yaml`.
+
 ## 0.8.0 - 2026-06-08
 
 - Added README quality profiles: `basic`, `standard`, `maintainer`, and `strict`.

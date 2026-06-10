@@ -49,7 +49,7 @@ npx github:danisantgry/readme-forge . --diff
 
 ## Features
 
-- Detects project name, description, scripts, package manager, TypeScript, Vite, Next.js, React, Express, Python, Rust, and Go markers.
+- Detects project name, description, scripts, package manager, npm/pnpm/yarn workspaces, TypeScript, Vite, Next.js, React, Express, Python, Rust, and Go markers.
 - Generates setup, scripts, testing, structure, and license sections.
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
@@ -58,7 +58,7 @@ npx github:danisantgry/readme-forge . --diff
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
-- Includes fixture-based regression tests for TypeScript, Vite, Python, Rust, and Go project shapes.
+- Includes fixture-based regression tests for TypeScript, Vite, Python, Rust, Go, and workspace project shapes.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
 - Designed for maintainer workflows where README updates should be repeatable, reviewable, and safe.
@@ -207,6 +207,8 @@ npm pack --dry-run
 
 The fixture regression suite is documented in [`docs/FIXTURES.md`](docs/FIXTURES.md).
 
+Workspace repositories are summarized with package manager, workspace patterns, and detected package names when `package.json` workspaces or `pnpm-workspace.yaml` are present.
+
 ## GitHub Actions
 
 Use [`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md) for a ready-to-copy workflow that fails a job when the README quality score is below 90%. This repository dogfoods the same gate locally through `npm run check:readme`.
@@ -232,6 +234,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - versioned configuration for teams and repeatable CI defaults
 - profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
+- workspace summaries for monorepos without deep repository scans
 - optional AI refinement without making AI required for the project
 
 ## Feedback Wanted
@@ -240,6 +243,7 @@ If you maintain an open-source project, feedback is especially useful on:
 
 - README sections that should be checked by `--check`
 - ecosystem metadata that should be detected next
+- workspace layouts that should be summarized more precisely
 - workflows that should consume `--format json`
 - scoring rules that should count toward README quality
 - config fields that would make repository adoption easier
@@ -252,6 +256,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 
 - npm publication under the `readme-forge` package name.
 - More ecosystem fixtures and package-manager-specific workflows.
+- Richer monorepo package summaries.
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
 - More configurable README quality scoring profiles for different project types.

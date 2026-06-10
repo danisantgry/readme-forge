@@ -1,0 +1,11 @@
+{
+  "name": "@fixture/web",
+  "description": "Workspace web app.",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "latest"
+  }
+}

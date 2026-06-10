@@ -1,3 +1,13 @@
+export type WorkspacePackage = {
+    name: string;
+    path: string;
+    description: string;
+};
+export type WorkspaceSummary = {
+    manager: "npm" | "pnpm" | "yarn";
+    patterns: string[];
+    packages: WorkspacePackage[];
+};
 export type ProjectFacts = {
     name: string;
     description: string;
@@ -7,5 +17,6 @@ export type ProjectFacts = {
     scripts: Record<string, string>;
     files: string[];
     license?: string;
+    workspaces?: WorkspaceSummary;
 };
 export declare function analyzeProject(root: string): Promise<ProjectFacts>;
