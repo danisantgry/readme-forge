@@ -20,6 +20,8 @@ describe("readme-forge", () => {
     await writeFile(path.join(root, "package.json"), JSON.stringify({
       name: "demo-app",
       description: "A demo application.",
+      license: "MIT",
+      repository: "git+https://github.com/example/demo-app.git",
       scripts: { dev: "vite", test: "vitest run" },
       devDependencies: { vite: "latest", typescript: "latest" }
     }));
@@ -28,9 +30,13 @@ describe("readme-forge", () => {
     const facts = await analyzeProject(root);
     const output = generateReadme(facts);
     expect(facts.frameworks).toContain("Vite");
+    expect(facts.repository?.owner).toBe("example");
+    expect(facts.repository?.name).toBe("demo-app");
     expect(facts.files).not.toContain("node_modules");
     expect(facts.files).not.toContain(".git");
     expect(output).toContain("# demo-app");
+    expect(output).toContain("img.shields.io/github/v/release/example/demo-app");
+    expect(output).toContain("img.shields.io/npm/v/demo-app");
     expect(output).toContain("npm run dev");
   });
 
@@ -158,6 +164,21 @@ describe("readme-forge", () => {
     expect(diffResult.stdout).toContain("+ # json-demo");
   });
 
+  it("can disable generated badges from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-no-badges-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "no-badge-demo",
+      description: "A badge toggle demo.",
+      license: "MIT",
+      repository: { url: "https://github.com/example/no-badge-demo" }
+    }));
+
+    const result = await exec(process.execPath, ["node_modules/tsx/dist/cli.mjs", "src/cli.ts", root, "--dry-run", "--no-badges"]);
+
+    expect(result.stdout).toContain("# no-badge-demo");
+    expect(result.stdout).not.toContain("img.shields.io");
+  });
+
   it("returns a scored README quality report from the CLI", async () => {
     const root = await mkdir(path.join(os.tmpdir(), `readme-forge-check-${Date.now()}-${Math.random()}`), { recursive: true });
     await writeFile(path.join(root, "package.json"), JSON.stringify({
@@ -263,6 +284,7 @@ describe("readme-forge", () => {
       minScore: 85,
       format: "json",
       profile: "strict",
+      badges: false,
       ai: false
     }));
 
@@ -271,6 +293,7 @@ describe("readme-forge", () => {
     expect(config.minScore).toBe(85);
     expect(config.format).toBe("json");
     expect(config.profile).toBe("strict");
+    expect(config.badges).toBe(false);
   });
 
   it("uses config defaults while letting CLI flags override them", async () => {

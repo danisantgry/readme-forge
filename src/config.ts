@@ -7,6 +7,7 @@ export type OutputFormat = "markdown" | "json";
 
 export type ReadmeForgeConfig = {
   ai?: boolean;
+  badges?: boolean;
   format?: OutputFormat;
   minScore?: number;
   output?: string;
@@ -50,6 +51,7 @@ export function parseConfig(source: string, configPath = "readme-forge.config.js
 
   const config = parsed as Record<string, unknown>;
   assertBoolean(config.ai, "ai");
+  assertBoolean(config.badges, "badges");
   assertString(config.format, "format");
   assertString(config.output, "output");
   assertString(config.profile, "profile");
@@ -68,6 +70,7 @@ export function parseConfig(source: string, configPath = "readme-forge.config.js
 
   return {
     ai: config.ai,
+    badges: config.badges,
     format: config.format as OutputFormat | undefined,
     minScore: config.minScore,
     output: config.output,

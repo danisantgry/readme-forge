@@ -21,6 +21,24 @@ function presetLine(preset) {
         return "Includes a web application workflow with clear local development commands.";
     return "Documents installation, usage, testing, and project structure for library consumers.";
 }
+function badgeSection(facts, enabled) {
+    if (!enabled)
+        return "";
+    const badges = [];
+    const githubSlug = facts.repository?.owner && facts.repository.name ? `${facts.repository.owner}/${facts.repository.name}` : undefined;
+    if (githubSlug) {
+        badges.push(`[![Release](https://img.shields.io/github/v/release/${githubSlug}?label=release)](https://github.com/${githubSlug}/releases)`);
+        badges.push(`[![Issues](https://img.shields.io/github/issues/${githubSlug})](https://github.com/${githubSlug}/issues)`);
+    }
+    if (facts.license) {
+        badges.push(`![License](https://img.shields.io/badge/license-${encodeURIComponent(facts.license)}-green)`);
+    }
+    if (facts.packageName && !facts.privatePackage && facts.packageManager !== "unknown") {
+        const packageName = encodeURIComponent(facts.packageName);
+        badges.push(`[![npm](https://img.shields.io/npm/v/${packageName}?label=npm)](https://www.npmjs.com/package/${packageName})`);
+    }
+    return badges.length ? `${badges.join("\n")}\n\n` : "";
+}
 function workspaceSection(facts) {
     if (!facts.workspaces)
         return "";
@@ -31,7 +49,7 @@ function workspaceSection(facts) {
         : "- No package manifests were found for the configured workspace patterns.";
     return `\n## Workspace Packages\n\nPackage manager: \`${facts.workspaces.manager}\`\n\nPatterns: ${facts.workspaces.patterns.map((pattern) => `\`${pattern}\``).join(", ")}\n\n${packages}\n`;
 }
-export function generateReadme(facts, preset = "auto") {
+export function generateReadme(facts, preset = "auto", options = {}) {
     const scripts = Object.keys(facts.scripts);
     const selectedPreset = inferPreset(facts, preset);
     const install = facts.packageManager === "unknown" ? "# install dependencies for your stack" : commandFor(facts.packageManager, "install");
@@ -39,7 +57,7 @@ export function generateReadme(facts, preset = "auto") {
     const test = scripts.includes("test") ? commandFor(facts.packageManager, "test") : "# add tests";
     return `# ${facts.name}
 
-${facts.description}
+${badgeSection(facts, options.badges !== false)}${facts.description}
 
 ## Highlights
 

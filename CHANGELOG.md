@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.0 - 2026-06-11
+
+- Added deterministic badge generation for GitHub releases, GitHub issues, license, and npm package status.
+- Added `--badges` and `--no-badges` controls for generated README output.
+- Added `badges` support in `readme-forge.config.json`.
+- Added repository metadata extraction from package manifests.
+- Increased Vitest timeout for end-to-end CLI subprocess tests.
+
 ## 0.9.0 - 2026-06-09
 
 - Added detection for npm, pnpm, and yarn workspace repositories.

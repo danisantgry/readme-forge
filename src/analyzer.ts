@@ -13,10 +13,19 @@ export type WorkspaceSummary = {
   packages: WorkspacePackage[];
 };
 
+export type RepositoryInfo = {
+  url: string;
+  owner?: string;
+  name?: string;
+};
+
 export type ProjectFacts = {
   name: string;
   description: string;
+  packageName?: string;
   packageManager: "npm" | "pnpm" | "yarn" | "unknown";
+  privatePackage: boolean;
+  repository?: RepositoryInfo;
   languages: string[];
   frameworks: string[];
   scripts: Record<string, string>;
@@ -55,6 +64,28 @@ function firstText(...values: Array<unknown>): string | undefined {
     if (typeof value === "string" && value.trim()) return value;
   }
   return undefined;
+}
+
+function readRepositoryUrl(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) return value;
+  if (value && typeof value === "object" && typeof (value as { url?: unknown }).url === "string") {
+    return (value as { url: string }).url;
+  }
+  return undefined;
+}
+
+function parseGitHubRepository(url: string): RepositoryInfo {
+  const normalized = url
+    .replace(/^git\+/, "")
+    .replace(/^git@github\.com:/, "https://github.com/")
+    .replace(/\.git$/, "");
+  const match = normalized.match(/github\.com[:/](?<owner>[^/\s]+)\/(?<name>[^/\s#?]+)/i);
+
+  return {
+    url: normalized,
+    owner: match?.groups?.owner,
+    name: match?.groups?.name
+  };
 }
 
 const ignoredEntries = new Set([".git", "node_modules", "dist", "coverage"]);
@@ -184,7 +215,10 @@ export async function analyzeProject(root: string): Promise<ProjectFacts> {
   return {
     name: firstText(packageJson?.name, readTomlString(pyproject, "name"), readTomlString(cargoToml, "name"), readGoModuleName(goMod)) ?? path.basename(root),
     description: firstText(packageJson?.description, readTomlString(pyproject, "description"), readTomlString(cargoToml, "description")) ?? "A useful software project.",
+    packageName: firstText(packageJson?.name),
     packageManager: detectPackageManager(files),
+    privatePackage: packageJson?.private === true,
+    repository: readRepositoryUrl(packageJson?.repository) ? parseGitHubRepository(readRepositoryUrl(packageJson?.repository) as string) : undefined,
     languages,
     frameworks,
     scripts: (packageJson?.scripts as Record<string, string> | undefined) ?? {},

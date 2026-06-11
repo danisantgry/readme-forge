@@ -31,6 +31,7 @@ export function parseConfig(source, configPath = "readme-forge.config.json") {
     }
     const config = parsed;
     assertBoolean(config.ai, "ai");
+    assertBoolean(config.badges, "badges");
     assertString(config.format, "format");
     assertString(config.output, "output");
     assertString(config.profile, "profile");
@@ -47,6 +48,7 @@ export function parseConfig(source, configPath = "readme-forge.config.json") {
     }
     return {
         ai: config.ai,
+        badges: config.badges,
         format: config.format,
         minScore: config.minScore,
         output: config.output,

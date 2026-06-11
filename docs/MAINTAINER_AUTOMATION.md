@@ -5,6 +5,7 @@
 ## Near-Term Automation
 
 - Generate README drafts from repository metadata before releases.
+- Generate deterministic badges from repository, license, and package metadata.
 - Summarize workspace packages for monorepos without scanning deeply.
 - Compare generated output with the committed README to identify stale sections.
 - Suggest missing onboarding sections such as install, test, scripts, and license.
@@ -20,6 +21,7 @@ Codex can support maintenance by:
 - reviewing parser and template changes
 - drafting tests for new framework detectors
 - expanding monorepo and workspace fixtures
+- keeping badge generation deterministic and metadata-backed
 - triaging issues into detector, template, CLI, and documentation categories
 - preparing release notes from merged changes
 - maintaining quality gate thresholds as the checker gets smarter

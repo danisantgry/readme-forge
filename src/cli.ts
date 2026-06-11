@@ -11,6 +11,7 @@ type Args = {
   root: string;
   output: string;
   ai: boolean;
+  badges: boolean;
   check: boolean;
   diff: boolean;
   dryRun: boolean;
@@ -69,6 +70,7 @@ async function parseArgs(argv: string[]): Promise<Args> {
     root,
     output: path.resolve(getOption(argv, "--output") ?? (config.output ? path.resolve(root, config.output) : path.join(root, "README.md"))),
     ai: hasOption(argv, "--ai") || config.ai === true,
+    badges: hasOption(argv, "--badges") || (!hasOption(argv, "--no-badges") && config.badges !== false),
     check: hasOption(argv, "--check"),
     diff: hasOption(argv, "--diff"),
     dryRun: hasOption(argv, "--dry-run"),
@@ -99,7 +101,7 @@ function createLineDiff(existing: string, generated: string): string {
 async function main(): Promise<void> {
   const args = await parseArgs(process.argv.slice(2));
   const facts = await analyzeProject(args.root);
-  const readme = args.ai ? await generateWithGemini(facts) : generateReadme(facts, args.template);
+  const readme = args.ai ? await generateWithGemini(facts) : generateReadme(facts, args.template, { badges: args.badges });
   const existing = await readFile(args.output, "utf8").catch(() => "");
 
   if (args.check) {

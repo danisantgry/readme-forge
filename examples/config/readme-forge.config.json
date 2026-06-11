@@ -1,6 +1,7 @@
 {
   "template": "cli",
   "profile": "maintainer",
+  "badges": true,
   "output": "README.generated.md",
   "format": "json",
   "minScore": 90,

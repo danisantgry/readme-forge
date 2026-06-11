@@ -3,6 +3,7 @@ import type { QualityProfile } from "./quality.js";
 export type OutputFormat = "markdown" | "json";
 export type ReadmeForgeConfig = {
     ai?: boolean;
+    badges?: boolean;
     format?: OutputFormat;
     minScore?: number;
     output?: string;

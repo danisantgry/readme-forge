@@ -55,6 +55,7 @@ npx github:danisantgry/readme-forge . --diff
 - Supports `cli`, `library`, and `web` template presets.
 - Supports `readme-forge.config.json` for repeatable repository defaults.
 - Supports `basic`, `standard`, `maintainer`, and `strict` quality profiles.
+- Generates deterministic release, issues, license, and npm badges when metadata is available.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -165,12 +166,19 @@ Use repository defaults:
 {
   "template": "cli",
   "profile": "maintainer",
+  "badges": true,
   "minScore": 90,
   "format": "json"
 }
 ```
 
 See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for supported config fields and precedence rules.
+
+Disable generated badges when needed:
+
+```bash
+npm run dev -- . --dry-run --no-badges
+```
 
 Use Gemini refinement:
 
@@ -235,6 +243,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
 - workspace summaries for monorepos without deep repository scans
+- deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project
 
 ## Feedback Wanted
@@ -248,6 +257,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - scoring rules that should count toward README quality
 - config fields that would make repository adoption easier
 - profile rules that should be stricter or more forgiving
+- badge metadata that should be supported next
 - generated output that feels too generic or misses important context
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).

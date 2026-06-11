@@ -30,6 +30,26 @@ function firstText(...values) {
     }
     return undefined;
 }
+function readRepositoryUrl(value) {
+    if (typeof value === "string" && value.trim())
+        return value;
+    if (value && typeof value === "object" && typeof value.url === "string") {
+        return value.url;
+    }
+    return undefined;
+}
+function parseGitHubRepository(url) {
+    const normalized = url
+        .replace(/^git\+/, "")
+        .replace(/^git@github\.com:/, "https://github.com/")
+        .replace(/\.git$/, "");
+    const match = normalized.match(/github\.com[:/](?<owner>[^/\s]+)\/(?<name>[^/\s#?]+)/i);
+    return {
+        url: normalized,
+        owner: match?.groups?.owner,
+        name: match?.groups?.name
+    };
+}
 const ignoredEntries = new Set([".git", "node_modules", "dist", "coverage"]);
 async function listProjectEntries(root) {
     const entries = await readdir(root, { withFileTypes: true });
@@ -152,7 +172,10 @@ export async function analyzeProject(root) {
     return {
         name: firstText(packageJson?.name, readTomlString(pyproject, "name"), readTomlString(cargoToml, "name"), readGoModuleName(goMod)) ?? path.basename(root),
         description: firstText(packageJson?.description, readTomlString(pyproject, "description"), readTomlString(cargoToml, "description")) ?? "A useful software project.",
+        packageName: firstText(packageJson?.name),
         packageManager: detectPackageManager(files),
+        privatePackage: packageJson?.private === true,
+        repository: readRepositoryUrl(packageJson?.repository) ? parseGitHubRepository(readRepositoryUrl(packageJson?.repository)) : undefined,
         languages,
         frameworks,
         scripts: packageJson?.scripts ?? {},

@@ -2,6 +2,10 @@ import type { ProjectFacts } from "./analyzer.js";
 
 export type TemplatePreset = "auto" | "cli" | "library" | "web";
 
+export type GenerateReadmeOptions = {
+  badges?: boolean;
+};
+
 function commandFor(manager: ProjectFacts["packageManager"], command: string): string {
   if (manager === "pnpm") return `pnpm ${command}`;
   if (manager === "yarn") return command === "install" ? "yarn" : `yarn ${command}`;
@@ -21,6 +25,26 @@ function presetLine(preset: Exclude<TemplatePreset, "auto">): string {
   return "Documents installation, usage, testing, and project structure for library consumers.";
 }
 
+function badgeSection(facts: ProjectFacts, enabled: boolean): string {
+  if (!enabled) return "";
+  const badges: string[] = [];
+  const githubSlug = facts.repository?.owner && facts.repository.name ? `${facts.repository.owner}/${facts.repository.name}` : undefined;
+
+  if (githubSlug) {
+    badges.push(`[![Release](https://img.shields.io/github/v/release/${githubSlug}?label=release)](https://github.com/${githubSlug}/releases)`);
+    badges.push(`[![Issues](https://img.shields.io/github/issues/${githubSlug})](https://github.com/${githubSlug}/issues)`);
+  }
+  if (facts.license) {
+    badges.push(`![License](https://img.shields.io/badge/license-${encodeURIComponent(facts.license)}-green)`);
+  }
+  if (facts.packageName && !facts.privatePackage && facts.packageManager !== "unknown") {
+    const packageName = encodeURIComponent(facts.packageName);
+    badges.push(`[![npm](https://img.shields.io/npm/v/${packageName}?label=npm)](https://www.npmjs.com/package/${packageName})`);
+  }
+
+  return badges.length ? `${badges.join("\n")}\n\n` : "";
+}
+
 function workspaceSection(facts: ProjectFacts): string {
   if (!facts.workspaces) return "";
   const packages = facts.workspaces.packages.length
@@ -32,7 +56,7 @@ function workspaceSection(facts: ProjectFacts): string {
   return `\n## Workspace Packages\n\nPackage manager: \`${facts.workspaces.manager}\`\n\nPatterns: ${facts.workspaces.patterns.map((pattern) => `\`${pattern}\``).join(", ")}\n\n${packages}\n`;
 }
 
-export function generateReadme(facts: ProjectFacts, preset: TemplatePreset = "auto"): string {
+export function generateReadme(facts: ProjectFacts, preset: TemplatePreset = "auto", options: GenerateReadmeOptions = {}): string {
   const scripts = Object.keys(facts.scripts);
   const selectedPreset = inferPreset(facts, preset);
   const install = facts.packageManager === "unknown" ? "# install dependencies for your stack" : commandFor(facts.packageManager, "install");
@@ -41,7 +65,7 @@ export function generateReadme(facts: ProjectFacts, preset: TemplatePreset = "au
 
   return `# ${facts.name}
 
-${facts.description}
+${badgeSection(facts, options.badges !== false)}${facts.description}
 
 ## Highlights
 

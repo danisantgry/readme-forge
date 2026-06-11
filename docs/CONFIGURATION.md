@@ -10,6 +10,7 @@ CLI flags always override config values.
 {
   "template": "cli",
   "profile": "maintainer",
+  "badges": true,
   "output": "README.generated.md",
   "format": "json",
   "minScore": 90,
@@ -21,6 +22,7 @@ CLI flags always override config values.
 
 - `template`: one of `auto`, `cli`, `library`, or `web`.
 - `profile`: one of `basic`, `standard`, `maintainer`, or `strict`.
+- `badges`: boolean that enables or disables generated badges.
 - `output`: README output path, resolved relative to the project root.
 - `format`: one of `markdown` or `json`.
 - `minScore`: integer from 0 to 100, used by `--check`.
@@ -59,3 +61,14 @@ the command emits machine-readable output and fails when the README score is bel
 - `standard`: `basic` plus scripts and testing.
 - `maintainer`: `standard` plus contribution and security policy links when those files exist. This is the default.
 - `strict`: `maintainer` plus changelog or release-notes coverage when `CHANGELOG.md` exists.
+
+## Badges
+
+Badges are enabled by default for generated README output. Use `badges: false` or `--no-badges` when a repository prefers a plain README.
+
+Generated badges are deterministic and based only on detected metadata:
+
+- GitHub release badge when a GitHub repository URL is present.
+- GitHub issues badge when a GitHub repository URL is present.
+- License badge when license metadata exists.
+- npm version badge when a public npm package name exists.
