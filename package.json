@@ -1,6 +1,6 @@
 {
   "name": "readme-forge",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Generate polished README files from project metadata, with optional Gemini enhancement through environment variables.",
   "type": "module",
   "engines": {
@@ -19,6 +19,8 @@
   },
   "files": [
     "dist",
+    "docs",
+    "examples",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -48,6 +50,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "esbuild": "^0.28.1",
     "tsx": "^4.19.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"

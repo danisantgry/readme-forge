@@ -2,6 +2,15 @@
 
 Use this workflow in repositories that want `readme-forge` to enforce a README quality baseline on push and pull requests.
 
+The quickest path is to let `readme-forge` scaffold it:
+
+```bash
+npx github:danisantgry/readme-forge init . --github-actions --dry-run
+npx github:danisantgry/readme-forge init . --github-actions
+```
+
+Existing workflow files are protected unless `--force` is used.
+
 ```yaml
 name: README Quality
 

@@ -5,6 +5,7 @@ import { analyzeProject } from "./analyzer.js";
 import { loadConfig, type OutputFormat } from "./config.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme, type TemplatePreset } from "./generator.js";
+import { createInitPlan, writeInitPlan } from "./init.js";
 import { assessReadmeQuality, type QualityProfile } from "./quality.js";
 
 type Args = {
@@ -22,6 +23,7 @@ type Args = {
 };
 
 const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--template"]);
+const initOptionNames = new Set(["--min-score", "--path", "--profile", "--template"]);
 
 function getOption(argv: string[], name: string): string | undefined {
   const index = argv.indexOf(name);
@@ -36,6 +38,19 @@ function resolveRoot(argv: string[]): string {
   const optionValueIndexes = new Set(
     argv
       .map((arg, index) => (optionNames.has(arg) ? index + 1 : -1))
+      .filter((index) => index >= 0)
+  );
+
+  return path.resolve(argv.find((arg, index) => !arg.startsWith("--") && !optionValueIndexes.has(index)) ?? ".");
+}
+
+function resolveInitRoot(argv: string[]): string {
+  const explicitPath = getOption(argv, "--path");
+  if (explicitPath) return path.resolve(explicitPath);
+
+  const optionValueIndexes = new Set(
+    argv
+      .map((arg, index) => (initOptionNames.has(arg) ? index + 1 : -1))
       .filter((index) => index >= 0)
   );
 
@@ -99,7 +114,51 @@ function createLineDiff(existing: string, generated: string): string {
 }
 
 async function main(): Promise<void> {
-  const args = await parseArgs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  if (argv[0] === "init") {
+    const initArgs = argv.slice(1);
+    const template = getOption(initArgs, "--template") ?? "auto";
+    const profile = getOption(initArgs, "--profile") ?? "maintainer";
+    const minScoreOption = getOption(initArgs, "--min-score");
+    const minScore = minScoreOption === undefined ? 90 : Number(minScoreOption);
+
+    if (!["auto", "cli", "library", "web"].includes(template)) {
+      throw new Error("--template must be one of: auto, cli, library, web");
+    }
+    if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
+      throw new Error("--profile must be one of: basic, standard, maintainer, strict");
+    }
+    if (!Number.isInteger(minScore) || minScore < 0 || minScore > 100) {
+      throw new Error("--min-score must be an integer between 0 and 100");
+    }
+
+    const options = {
+      root: resolveInitRoot(initArgs),
+      badges: !hasOption(initArgs, "--no-badges"),
+      force: hasOption(initArgs, "--force"),
+      githubActions: hasOption(initArgs, "--github-actions") || hasOption(initArgs, "--with-github-actions"),
+      minScore,
+      profile: profile as QualityProfile,
+      template: template as TemplatePreset
+    };
+
+    if (hasOption(initArgs, "--dry-run")) {
+      console.log(`Planned readme-forge adoption kit for ${options.root}:`);
+      for (const entry of createInitPlan(options)) {
+        console.log(`- ${entry.path}`);
+      }
+      return;
+    }
+
+    const result = await writeInitPlan(options);
+    console.log("Created readme-forge adoption kit:");
+    for (const filePath of result.written) {
+      console.log(`- ${filePath}`);
+    }
+    return;
+  }
+
+  const args = await parseArgs(argv);
   const facts = await analyzeProject(args.root);
   const readme = args.ai ? await generateWithGemini(facts) : generateReadme(facts, args.template, { badges: args.badges });
   const existing = await readFile(args.output, "utf8").catch(() => "");

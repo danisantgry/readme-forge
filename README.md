@@ -33,6 +33,12 @@ Require a minimum score for CI:
 npx github:danisantgry/readme-forge . --check --min-score 90
 ```
 
+Preview a repository adoption kit before writing files:
+
+```bash
+npx github:danisantgry/readme-forge init . --github-actions --dry-run
+```
+
 Example:
 
 ```text
@@ -56,6 +62,7 @@ npx github:danisantgry/readme-forge . --diff
 - Supports `readme-forge.config.json` for repeatable repository defaults.
 - Supports `basic`, `standard`, `maintainer`, and `strict` quality profiles.
 - Generates deterministic release, issues, license, and npm badges when metadata is available.
+- Scaffolds `readme-forge.config.json` and an optional GitHub Actions README quality gate with `readme-forge init`.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -174,6 +181,15 @@ Use repository defaults:
 
 See [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) for supported config fields and precedence rules.
 
+Initialize a repeatable adoption kit:
+
+```bash
+npm run dev -- init . --github-actions --dry-run
+npm run dev -- init . --github-actions
+```
+
+The init command creates `readme-forge.config.json` and, when requested, `.github/workflows/readme-quality.yml`. Existing files are protected unless `--force` is used. See [`docs/ADOPTION_KIT.md`](docs/ADOPTION_KIT.md) for the full setup flow.
+
 Disable generated badges when needed:
 
 ```bash
@@ -221,6 +237,12 @@ Workspace repositories are summarized with package manager, workspace patterns, 
 
 Use [`docs/GITHUB_ACTIONS.md`](docs/GITHUB_ACTIONS.md) for a ready-to-copy workflow that fails a job when the README quality score is below 90%. This repository dogfoods the same gate locally through `npm run check:readme`.
 
+To scaffold the workflow in another repository:
+
+```bash
+npx github:danisantgry/readme-forge init . --github-actions
+```
+
 ## Safety
 
 The CLI reads project metadata and writes only the requested README output. API keys are read from the environment and are not written to disk.
@@ -240,6 +262,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - measurable README quality scoring for release gates
 - GitHub Actions-ready quality gates for README regressions
 - versioned configuration for teams and repeatable CI defaults
+- 60-second adoption kits that create config and CI guardrails without hand-copying YAML
 - profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
 - workspace summaries for monorepos without deep repository scans
@@ -258,6 +281,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - config fields that would make repository adoption easier
 - profile rules that should be stricter or more forgiving
 - badge metadata that should be supported next
+- adoption defaults that should be included in `readme-forge init`
 - generated output that feels too generic or misses important context
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
@@ -270,6 +294,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
 - More configurable README quality scoring profiles for different project types.
+- Generated README gallery for real project shapes.
 
 ## Contributing
 

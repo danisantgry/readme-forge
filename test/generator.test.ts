@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { analyzeProject } from "../src/analyzer.js";
 import { parseConfig } from "../src/config.js";
 import { generateReadme } from "../src/generator.js";
+import { createInitPlan } from "../src/init.js";
 import { assessReadmeQuality, checkReadmeQuality } from "../src/quality.js";
 
 const exec = promisify(execFile);
@@ -294,6 +295,82 @@ describe("readme-forge", () => {
     expect(config.format).toBe("json");
     expect(config.profile).toBe("strict");
     expect(config.badges).toBe(false);
+  });
+
+  it("plans an adoption kit config and GitHub Actions workflow", () => {
+    const root = path.join(os.tmpdir(), `readme-forge-init-plan-${Date.now()}-${Math.random()}`);
+    const plan = createInitPlan({
+      root,
+      githubActions: true,
+      minScore: 85,
+      profile: "strict",
+      template: "library",
+      badges: false
+    });
+
+    expect(plan.map((entry) => path.basename(entry.path))).toEqual(["readme-forge.config.json", "readme-quality.yml"]);
+    expect(plan[0].content).toContain('"template": "library"');
+    expect(plan[0].content).toContain('"profile": "strict"');
+    expect(plan[0].content).toContain('"badges": false');
+    expect(plan[0].content).toContain('"minScore": 85');
+    expect(plan[1].content).toContain("npx github:danisantgry/readme-forge . --check --min-score 85 --profile strict --format json");
+  });
+
+  it("previews the adoption kit without writing files", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-init-dry-${Date.now()}-${Math.random()}`), { recursive: true });
+
+    const result = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "init",
+      "--path",
+      root,
+      "--github-actions",
+      "--dry-run"
+    ]);
+
+    expect(result.stdout).toContain("readme-forge.config.json");
+    expect(result.stdout).toContain("readme-quality.yml");
+    await expect(readFile(path.join(root, "readme-forge.config.json"), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(readFile(path.join(root, ".github", "workflows", "readme-quality.yml"), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("writes an adoption kit and guards existing files", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-init-write-${Date.now()}-${Math.random()}`), { recursive: true });
+
+    await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "init",
+      root,
+      "--github-actions",
+      "--min-score",
+      "85",
+      "--profile",
+      "strict",
+      "--template",
+      "web",
+      "--no-badges"
+    ]);
+
+    const config = parseConfig(await readFile(path.join(root, "readme-forge.config.json"), "utf8"));
+    const workflow = await readFile(path.join(root, ".github", "workflows", "readme-quality.yml"), "utf8");
+
+    expect(config.minScore).toBe(85);
+    expect(config.profile).toBe("strict");
+    expect(config.template).toBe("web");
+    expect(config.badges).toBe(false);
+    expect(workflow).toContain("--min-score 85 --profile strict");
+
+    const blocked = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "init",
+      root
+    ]).catch((error: { stderr: string }) => error);
+
+    expect(blocked.stderr).toContain("Refusing to overwrite existing files");
+    expect(blocked.stderr).toContain("readme-forge.config.json");
   });
 
   it("uses config defaults while letting CLI flags override them", async () => {

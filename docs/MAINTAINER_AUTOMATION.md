@@ -11,6 +11,7 @@
 - Suggest missing onboarding sections such as install, test, scripts, and license.
 - Fail CI when README quality drops below a configured score.
 - Share versioned defaults through `readme-forge.config.json`.
+- Scaffold adoption kits with config and optional GitHub Actions workflows.
 - Choose quality profiles for lightweight, standard, maintainer, or strict documentation gates.
 - Support optional AI refinement when a maintainer explicitly opts in.
 
@@ -26,6 +27,7 @@ Codex can support maintenance by:
 - preparing release notes from merged changes
 - maintaining quality gate thresholds as the checker gets smarter
 - proposing config defaults for different project types
+- improving the `init` adoption flow for common maintainer setups
 - tuning quality profiles for different repository maturity levels
 - checking that AI-assisted output does not invent unsupported project capabilities
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.0 - 2026-06-12
+
+- Added `readme-forge init` for creating repository adoption kits.
+- Added safe config scaffolding for `readme-forge.config.json`.
+- Added optional GitHub Actions workflow scaffolding with `--github-actions`.
+- Added `--dry-run`, `--force`, `--min-score`, `--profile`, `--template`, and `--no-badges` controls for init workflows.
+- Added adoption kit documentation and tests for init planning, dry runs, writing, and overwrite protection.
+- Included docs and examples in package files for a complete npm README experience.
+- Updated dev tooling dependencies so `npm audit` reports no known vulnerabilities.
+
 ## 0.10.0 - 2026-06-11
 
 - Added deterministic badge generation for GitHub releases, GitHub issues, license, and npm package status.

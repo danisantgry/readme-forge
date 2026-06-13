@@ -4,6 +4,15 @@
 
 CLI flags always override config values.
 
+To create a starter config safely, run:
+
+```bash
+readme-forge init . --dry-run
+readme-forge init .
+```
+
+See [`ADOPTION_KIT.md`](ADOPTION_KIT.md) for the full setup flow, including GitHub Actions scaffolding.
+
 ## Example
 
 ```json
