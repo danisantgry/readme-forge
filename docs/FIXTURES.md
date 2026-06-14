@@ -4,6 +4,8 @@
 
 These fixtures protect the analyzer, generator, and README quality score from regressions as new ecosystems are added.
 
+They also power the generated examples in [`GALLERY.md`](GALLERY.md).
+
 ## Current Fixtures
 
 - `typescript-cli`: npm package with TypeScript, CLI entrypoint, scripts, and MIT license.
@@ -23,6 +25,16 @@ The fixture tests verify that each project:
 - detects workspace manager, patterns, and package summaries when applicable
 - generates a README with setup and testing sections
 - produces a 100% README quality score for generated output
+
+## Generated Gallery
+
+Regenerate the committed gallery after changing fixtures, detectors, or templates:
+
+```bash
+npm run build
+npm run examples:generate
+npm run examples:check
+```
 
 ## Adding A Fixture
 

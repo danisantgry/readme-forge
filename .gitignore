@@ -2,5 +2,6 @@ node_modules/
 coverage/
 .env
 README.generated.md
+!examples/gallery/**/README.generated.md
 *.log
 .DS_Store

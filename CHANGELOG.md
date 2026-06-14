@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0 - 2026-06-13
+
+- Added a generated README gallery for TypeScript CLI, Vite web app, npm workspace, Python package, Rust crate, and Go module project shapes.
+- Added `scripts/generate-gallery.mjs` for regenerating gallery examples from fixture metadata.
+- Added `examples:generate` and `examples:check` scripts for reproducible example output.
+- Linked the gallery from the main README and documented the command used to preview each example.
+- Included gallery fixtures and scripts in packaged files so the example workflow remains inspectable.
+
 ## 0.11.0 - 2026-06-12
 
 - Added `readme-forge init` for creating repository adoption kits.

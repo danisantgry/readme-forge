@@ -53,6 +53,17 @@ Review generated README changes as a diff before writing:
 npx github:danisantgry/readme-forge . --diff
 ```
 
+Browse generated examples:
+
+- [TypeScript CLI](examples/gallery/typescript-cli/README.generated.md)
+- [Vite web app](examples/gallery/vite-web/README.generated.md)
+- [npm workspace](examples/gallery/npm-workspace/README.generated.md)
+- [Python package](examples/gallery/python-package/README.generated.md)
+- [Rust crate](examples/gallery/rust-crate/README.generated.md)
+- [Go module](examples/gallery/go-module/README.generated.md)
+
+See the full [generated README gallery](docs/GALLERY.md).
+
 ## Features
 
 - Detects project name, description, scripts, package manager, npm/pnpm/yarn workspaces, TypeScript, Vite, Next.js, React, Express, Python, Rust, and Go markers.
@@ -67,6 +78,7 @@ npx github:danisantgry/readme-forge . --diff
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
 - Includes fixture-based regression tests for TypeScript, Vite, Python, Rust, Go, and workspace project shapes.
+- Includes a generated README gallery for comparing output across real project shapes.
 - Optional Gemini enhancement through environment variables only.
 - Never stores API keys in generated files.
 - Designed for maintainer workflows where README updates should be repeatable, reviewable, and safe.
@@ -216,7 +228,9 @@ set GEMINI_MODEL=gemini-2.5-flash-lite
 - `test`: run the Vitest suite.
 - `lint`: type-check without emitting files.
 - `check:readme`: run the README quality gate at 90%.
-- `prepublishOnly`: validate lint, build, and tests before publication.
+- `examples:generate`: regenerate the committed example gallery from fixtures.
+- `examples:check`: verify the committed example gallery is in sync.
+- `prepublishOnly`: validate lint, build, tests, and generated examples before publication.
 
 ## Testing
 
@@ -225,6 +239,7 @@ npm run lint
 npm run build
 npm test
 npm run check:readme
+npm run examples:check
 npm audit
 npm pack --dry-run
 ```
@@ -251,6 +266,8 @@ The CLI reads project metadata and writes only the requested README output. API 
 
 See [`examples/node-library/README.generated.md`](examples/node-library/README.generated.md) for a generated README from a small TypeScript package.
 
+For a broader comparison, see [`docs/GALLERY.md`](docs/GALLERY.md), which links generated output for TypeScript CLI, Vite, npm workspace, Python, Rust, and Go project shapes.
+
 ## Maintainer Workflow
 
 `readme-forge` is intended to support:
@@ -265,6 +282,7 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 - 60-second adoption kits that create config and CI guardrails without hand-copying YAML
 - profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
+- generated examples that make output quality visible before installation
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project
@@ -283,6 +301,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - badge metadata that should be supported next
 - adoption defaults that should be included in `readme-forge init`
 - generated output that feels too generic or misses important context
+- additional project shapes that should appear in the generated gallery
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
 
@@ -294,7 +313,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 - README templates for libraries, CLIs, and web apps.
 - npm publishing and release workflow documentation.
 - More configurable README quality scoring profiles for different project types.
-- Generated README gallery for real project shapes.
+- Gallery screenshots or richer before/after documentation examples.
 
 ## Contributing
 
