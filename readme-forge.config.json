@@ -1,0 +1,7 @@
+{
+  "template": "cli",
+  "profile": "maintainer",
+  "badges": true,
+  "minScore": 90,
+  "ai": false
+}

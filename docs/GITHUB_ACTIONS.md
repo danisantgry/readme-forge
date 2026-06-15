@@ -2,6 +2,12 @@
 
 Use this workflow in repositories that want `readme-forge` to enforce a README quality baseline on push and pull requests.
 
+Before adding CI, run a local diagnosis:
+
+```bash
+npx github:danisantgry/readme-forge doctor . --min-score 90
+```
+
 The quickest path is to let `readme-forge` scaffold it:
 
 ```bash

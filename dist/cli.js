@@ -3,6 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
 import { loadConfig } from "./config.js";
+import { createDoctorReport, formatDoctorReport } from "./doctor.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme } from "./generator.js";
 import { createInitPlan, writeInitPlan } from "./init.js";
@@ -68,6 +69,45 @@ async function parseArgs(argv) {
         template: template
     };
 }
+async function runDoctor(argv) {
+    const root = resolveRoot(argv);
+    const config = await loadConfig(root, getOption(argv, "--config"));
+    const template = getOption(argv, "--template") ?? config.template ?? "auto";
+    const format = getOption(argv, "--format") ?? config.format ?? "markdown";
+    const profile = getOption(argv, "--profile") ?? config.profile ?? "maintainer";
+    const minScoreOption = getOption(argv, "--min-score");
+    const minScore = minScoreOption !== undefined ? Number(minScoreOption) : config.minScore;
+    const output = getOption(argv, "--output") ?? config.output;
+    if (!["auto", "cli", "library", "web"].includes(template)) {
+        throw new Error("--template must be one of: auto, cli, library, web");
+    }
+    if (!["markdown", "json"].includes(format)) {
+        throw new Error("--format must be one of: markdown, json");
+    }
+    if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
+        throw new Error("--profile must be one of: basic, standard, maintainer, strict");
+    }
+    if (minScore !== undefined && (!Number.isInteger(minScore) || minScore < 0 || minScore > 100)) {
+        throw new Error("--min-score must be an integer between 0 and 100");
+    }
+    const report = await createDoctorReport({
+        root,
+        output: output ? path.resolve(root, output) : undefined,
+        badges: hasOption(argv, "--badges") || (!hasOption(argv, "--no-badges") && config.badges !== false),
+        minScore,
+        profile: profile,
+        template: template
+    });
+    if (format === "json") {
+        console.log(JSON.stringify(report, null, 2));
+    }
+    else {
+        console.log(formatDoctorReport(report));
+    }
+    if (report.readme.minimumScore !== undefined && !report.readme.passedMinimumScore) {
+        process.exitCode = 1;
+    }
+}
 function createLineDiff(existing, generated) {
     const oldLines = existing.trimEnd().split(/\r?\n/);
     const newLines = generated.trimEnd().split(/\r?\n/);
@@ -87,6 +127,10 @@ function createLineDiff(existing, generated) {
 }
 async function main() {
     const argv = process.argv.slice(2);
+    if (argv[0] === "doctor") {
+        await runDoctor(argv.slice(1));
+        return;
+    }
     if (argv[0] === "init") {
         const initArgs = argv.slice(1);
         const template = getOption(initArgs, "--template") ?? "auto";

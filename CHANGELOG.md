@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.0 - 2026-06-14
+
+- Added `readme-forge doctor` for README health and adoption diagnostics.
+- Added human-readable doctor reports with detected project shape, README score, generated diff status, config status, workflow status, and recommended next actions.
+- Added JSON doctor reports for automation with `--format json`.
+- Added `--min-score`, `--profile`, `--template`, `--output`, and badge controls for doctor workflows.
+- Added doctor documentation and regression tests for structured reports and CLI JSON output.
+- Added repository-level `readme-forge.config.json` dogfooding and `npm run doctor`.
+
 ## 0.12.0 - 2026-06-13
 
 - Added a generated README gallery for TypeScript CLI, Vite web app, npm workspace, Python package, Rust crate, and Go module project shapes.

@@ -23,6 +23,9 @@ Commands:
 npm run lint
 npm run build
 npm test
+npm run check:readme
+npm run examples:check
+npx github:danisantgry/readme-forge doctor . --min-score 90
 npm audit
 npm pack --dry-run
 ```
@@ -31,5 +34,22 @@ Result:
 
 - TypeScript passes.
 - Tests pass.
+- README quality passes at the configured 90% minimum score.
+- Generated gallery output stays in sync with fixtures.
+- The doctor command reports README score, generated diff status, config adoption, and remaining workflow adoption work.
 - npm audit reports 0 vulnerabilities.
 - npm package tarball is generated successfully.
+
+## Repository Config
+
+The repository dogfoods `readme-forge.config.json` with maintainer profile defaults:
+
+```json
+{
+  "template": "cli",
+  "profile": "maintainer",
+  "badges": true,
+  "minScore": 90,
+  "ai": false
+}
+```

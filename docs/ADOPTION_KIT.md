@@ -9,10 +9,11 @@ It creates a safe local configuration file and can also scaffold a GitHub Action
 Always start with a dry run:
 
 ```bash
+npx github:danisantgry/readme-forge doctor .
 npx github:danisantgry/readme-forge init . --github-actions --dry-run
 ```
 
-The command prints the files it would create without writing anything.
+The doctor command reports current documentation health. The init dry run prints the files it would create without writing anything.
 
 ## Create The Kit
 

@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { analyzeProject } from "../src/analyzer.js";
 import { parseConfig } from "../src/config.js";
+import { createDoctorReport, formatDoctorReport } from "../src/doctor.js";
 import { generateReadme } from "../src/generator.js";
 import { createInitPlan } from "../src/init.js";
 import { assessReadmeQuality, checkReadmeQuality } from "../src/quality.js";
@@ -371,6 +372,63 @@ describe("readme-forge", () => {
 
     expect(blocked.stderr).toContain("Refusing to overwrite existing files");
     expect(blocked.stderr).toContain("readme-forge.config.json");
+  });
+
+  it("reports documentation health and adoption recommendations", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-doctor-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "doctor-demo",
+      description: "A doctor demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# doctor-demo\n");
+
+    const report = await createDoctorReport({ root, minScore: 90, profile: "maintainer" });
+    const text = formatDoctorReport(report);
+
+    expect(report.ok).toBe(false);
+    expect(report.readme.exists).toBe(true);
+    expect(report.readme.passedMinimumScore).toBe(false);
+    expect(report.recommendations.map((item) => item.id)).toContain("review-generated-diff");
+    expect(report.recommendations.map((item) => item.id)).toContain("missing-install");
+    expect(report.recommendations.map((item) => item.id)).toContain("add-config");
+    expect(report.recommendations.map((item) => item.id)).toContain("add-readme-workflow");
+    expect(text).toContain("readme-forge doctor");
+    expect(text).toContain("Status: needs attention");
+  });
+
+  it("emits JSON doctor reports from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-doctor-json-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "doctor-json-demo",
+      description: "A doctor JSON demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# doctor-json-demo\n");
+
+    const result = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "doctor",
+      root,
+      "--min-score",
+      "90",
+      "--format",
+      "json"
+    ]).catch((error: { stdout: string }) => error);
+    const parsed = JSON.parse(result.stdout) as {
+      facts: { name: string };
+      ok: boolean;
+      readme: { passedMinimumScore: boolean };
+      recommendations: { id: string }[];
+    };
+
+    expect(parsed.facts.name).toBe("doctor-json-demo");
+    expect(parsed.ok).toBe(false);
+    expect(parsed.readme.passedMinimumScore).toBe(false);
+    expect(parsed.recommendations.map((item) => item.id)).toContain("minimum-score");
   });
 
   it("uses config defaults while letting CLI flags override them", async () => {

@@ -27,6 +27,12 @@ Check whether an existing README is missing common maintainer sections:
 npx github:danisantgry/readme-forge . --check
 ```
 
+Run a full README health diagnosis:
+
+```bash
+npx github:danisantgry/readme-forge doctor .
+```
+
 Require a minimum score for CI:
 
 ```bash
@@ -74,6 +80,7 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Supports `basic`, `standard`, `maintainer`, and `strict` quality profiles.
 - Generates deterministic release, issues, license, and npm badges when metadata is available.
 - Scaffolds `readme-forge.config.json` and an optional GitHub Actions README quality gate with `readme-forge init`.
+- Diagnoses README health, adoption status, generated diff status, and next actions with `readme-forge doctor`.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -129,6 +136,16 @@ Check README quality:
 ```bash
 npm run dev -- . --check
 ```
+
+Run a maintainer-oriented diagnosis:
+
+```bash
+npm run dev -- doctor .
+npm run dev -- doctor . --format json
+npm run dev -- doctor . --min-score 90
+```
+
+The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
 
 The check command returns a numeric score and lists missing sections when the README needs work:
 
@@ -230,7 +247,8 @@ set GEMINI_MODEL=gemini-2.5-flash-lite
 - `check:readme`: run the README quality gate at 90%.
 - `examples:generate`: regenerate the committed example gallery from fixtures.
 - `examples:check`: verify the committed example gallery is in sync.
-- `prepublishOnly`: validate lint, build, tests, and generated examples before publication.
+- `doctor`: run the documentation health report against this repository.
+- `prepublishOnly`: validate lint, build, tests, generated examples, and doctor output before publication.
 
 ## Testing
 
@@ -240,6 +258,7 @@ npm run build
 npm test
 npm run check:readme
 npm run examples:check
+npm run doctor
 npm audit
 npm pack --dry-run
 ```
@@ -268,12 +287,15 @@ See [`examples/node-library/README.generated.md`](examples/node-library/README.g
 
 For a broader comparison, see [`docs/GALLERY.md`](docs/GALLERY.md), which links generated output for TypeScript CLI, Vite, npm workspace, Python, Rust, and Go project shapes.
 
+For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
+
 ## Maintainer Workflow
 
 `readme-forge` is intended to support:
 
 - first-pass README drafts for new repositories
 - recurring README updates before releases
+- documentation health checks before publishing or asking for review
 - contributor-friendly documentation reviews
 - machine-readable checks for automation and agent workflows
 - measurable README quality scoring for release gates
@@ -283,6 +305,7 @@ For a broader comparison, see [`docs/GALLERY.md`](docs/GALLERY.md), which links 
 - profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
 - generated examples that make output quality visible before installation
+- doctor reports that turn README quality and adoption gaps into next actions
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project
@@ -302,6 +325,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - adoption defaults that should be included in `readme-forge init`
 - generated output that feels too generic or misses important context
 - additional project shapes that should appear in the generated gallery
+- doctor recommendations that should be smarter for specific ecosystems
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
 
@@ -314,6 +338,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 - npm publishing and release workflow documentation.
 - More configurable README quality scoring profiles for different project types.
 - Gallery screenshots or richer before/after documentation examples.
+- More ecosystem-aware doctor recommendations.
 
 ## Contributing
 
