@@ -57,6 +57,46 @@ The JSON report includes:
 - `recommendations`: actionable next steps
 - `ok`: whether README, generated output, config, and workflow are all in a ready state
 
+## Ecosystem-Aware Recommendations
+
+Doctor recommendations are grounded in detected project metadata.
+
+For Node projects, the report can suggest package-manager-specific commands:
+
+```text
+npm install
+npm run dev
+npm run build
+npm run test
+```
+
+For pnpm and yarn projects, the same recommendations use the detected package manager.
+
+For workspaces, the report can recommend documenting detected workspace packages and paths:
+
+```text
+readme-forge . --template auto --dry-run
+```
+
+For non-Node ecosystems, the report can suggest common contributor setup and test commands:
+
+```text
+python -m pip install -e .
+python -m pytest
+cargo build
+cargo test
+go mod download
+go test ./...
+```
+
+For project shape, the report can recommend a focused example template:
+
+```text
+readme-forge . --template cli --dry-run
+readme-forge . --template web --dry-run
+readme-forge . --template library --dry-run
+```
+
 ## Score Gates
 
 Use `--min-score` when the doctor command should fail in automation if the README quality score is too low:

@@ -80,7 +80,7 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Supports `basic`, `standard`, `maintainer`, and `strict` quality profiles.
 - Generates deterministic release, issues, license, and npm badges when metadata is available.
 - Scaffolds `readme-forge.config.json` and an optional GitHub Actions README quality gate with `readme-forge init`.
-- Diagnoses README health, adoption status, generated diff status, and next actions with `readme-forge doctor`.
+- Diagnoses README health, adoption status, generated diff status, and ecosystem-aware next actions with `readme-forge doctor`.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -145,7 +145,7 @@ npm run dev -- doctor . --format json
 npm run dev -- doctor . --min-score 90
 ```
 
-The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
+The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. Recommendations can include package-manager commands, workspace summaries, non-Node test commands, and CLI/web/library example templates. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
 
 The check command returns a numeric score and lists missing sections when the README needs work:
 
@@ -305,7 +305,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - profile-based quality checks for different repository maturity levels
 - fixture-based regression coverage for ecosystem detectors
 - generated examples that make output quality visible before installation
-- doctor reports that turn README quality and adoption gaps into next actions
+- doctor reports that turn README quality, ecosystem metadata, and adoption gaps into next actions
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project
@@ -325,7 +325,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - adoption defaults that should be included in `readme-forge init`
 - generated output that feels too generic or misses important context
 - additional project shapes that should appear in the generated gallery
-- doctor recommendations that should be smarter for specific ecosystems
+- doctor recommendations that should support additional ecosystems
 
 Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5).
 

@@ -70,6 +70,162 @@ function relativeCommandPath(root: string, targetPath: string): string {
   return relativePath && !relativePath.startsWith("..") ? relativePath : targetPath;
 }
 
+function installRecommendation(facts: ProjectFacts): DoctorRecommendation | undefined {
+  if (facts.packageManager === "pnpm") {
+    return {
+      id: "document-install-command",
+      message: "Document the detected pnpm install command.",
+      command: "pnpm install"
+    };
+  }
+  if (facts.packageManager === "yarn") {
+    return {
+      id: "document-install-command",
+      message: "Document the detected yarn install command.",
+      command: "yarn"
+    };
+  }
+  if (facts.packageManager === "npm") {
+    return {
+      id: "document-install-command",
+      message: "Document the detected npm install command.",
+      command: "npm install"
+    };
+  }
+  if (facts.languages.includes("Python")) {
+    return {
+      id: "document-python-install-command",
+      message: "Document editable Python package installation for local development.",
+      command: "python -m pip install -e ."
+    };
+  }
+  if (facts.languages.includes("Rust")) {
+    return {
+      id: "document-rust-build-command",
+      message: "Document the Rust build command for contributors.",
+      command: "cargo build"
+    };
+  }
+  if (facts.languages.includes("Go")) {
+    return {
+      id: "document-go-dependency-command",
+      message: "Document how Go contributors download module dependencies.",
+      command: "go mod download"
+    };
+  }
+  return undefined;
+}
+
+function scriptCommand(facts: ProjectFacts, script: string): string {
+  if (facts.packageManager === "pnpm") return `pnpm ${script}`;
+  if (facts.packageManager === "yarn") return `yarn ${script}`;
+  return `npm run ${script}`;
+}
+
+function detectedShape(facts: ProjectFacts): "cli" | "library" | "web" {
+  if (facts.frameworks.some((name) => ["Vite", "Next.js", "React"].includes(name))) return "web";
+  if (facts.frameworks.some((name) => ["Python package", "Rust crate", "Go module"].includes(name))) return "library";
+  if (facts.scripts.dev || facts.scripts.start || facts.files.includes("src")) return "cli";
+  return "library";
+}
+
+function addRecommendation(recommendations: DoctorRecommendation[], recommendation: DoctorRecommendation): void {
+  if (!recommendations.some((existing) => existing.id === recommendation.id)) {
+    recommendations.push(recommendation);
+  }
+}
+
+function ecosystemRecommendations(report: Omit<DoctorReport, "recommendations" | "ok">): DoctorRecommendation[] {
+  const recommendations: DoctorRecommendation[] = [];
+  const issueIds = new Set(report.readme.quality.issues.map((issue) => issue.id));
+  const needsReadmeWork = !report.readme.exists || report.readme.changedFromGenerated || report.readme.quality.issues.length > 0;
+  if (!needsReadmeWork) return recommendations;
+
+  if (!report.readme.exists || issueIds.has("missing-install")) {
+    const recommendation = installRecommendation(report.facts);
+    if (recommendation) addRecommendation(recommendations, recommendation);
+  }
+
+  if (report.facts.scripts.dev && (!report.readme.exists || issueIds.has("missing-scripts") || issueIds.has("missing-install"))) {
+    addRecommendation(recommendations, {
+      id: "document-dev-command",
+      message: "Document the local development command declared in package scripts.",
+      command: scriptCommand(report.facts, "dev")
+    });
+  }
+
+  if (report.facts.scripts.build && (!report.readme.exists || issueIds.has("missing-scripts"))) {
+    addRecommendation(recommendations, {
+      id: "document-build-command",
+      message: "Document the build command declared in package scripts.",
+      command: scriptCommand(report.facts, "build")
+    });
+  }
+
+  if (report.facts.scripts.test && (!report.readme.exists || issueIds.has("missing-tests"))) {
+    addRecommendation(recommendations, {
+      id: "document-test-command",
+      message: "Document the test command declared in package scripts.",
+      command: scriptCommand(report.facts, "test")
+    });
+  }
+
+  if (!report.facts.scripts.test && needsReadmeWork) {
+    if (report.facts.languages.includes("Python")) {
+      addRecommendation(recommendations, {
+        id: "document-python-test-command",
+        message: "Document the Python test command when the project has a test runner.",
+        command: "python -m pytest"
+      });
+    }
+    if (report.facts.languages.includes("Rust")) {
+      addRecommendation(recommendations, {
+        id: "document-rust-test-command",
+        message: "Document the Rust test command for crate contributors.",
+        command: "cargo test"
+      });
+    }
+    if (report.facts.languages.includes("Go")) {
+      addRecommendation(recommendations, {
+        id: "document-go-test-command",
+        message: "Document the Go test command for module contributors.",
+        command: "go test ./..."
+      });
+    }
+  }
+
+  if (report.facts.workspaces) {
+    addRecommendation(recommendations, {
+      id: "document-workspace-summary",
+      message: `Document ${report.facts.workspaces.packages.length} detected workspace package${report.facts.workspaces.packages.length === 1 ? "" : "s"} and their paths.`,
+      command: "readme-forge . --template auto --dry-run"
+    });
+  }
+
+  const shape = detectedShape(report.facts);
+  if (shape === "web") {
+    addRecommendation(recommendations, {
+      id: "add-web-local-development-example",
+      message: "Add a web app local development example so contributors can start the app quickly.",
+      command: "readme-forge . --template web --dry-run"
+    });
+  } else if (shape === "cli") {
+    addRecommendation(recommendations, {
+      id: "add-cli-usage-example",
+      message: "Add a CLI usage example so users can see the command workflow before installing.",
+      command: "readme-forge . --template cli --dry-run"
+    });
+  } else {
+    addRecommendation(recommendations, {
+      id: "add-library-usage-example",
+      message: "Add a library usage example grounded in the detected package metadata.",
+      command: "readme-forge . --template library --dry-run"
+    });
+  }
+
+  return recommendations;
+}
+
 function buildRecommendations(report: Omit<DoctorReport, "recommendations" | "ok">): DoctorRecommendation[] {
   const recommendations: DoctorRecommendation[] = [];
 
@@ -92,6 +248,10 @@ function buildRecommendations(report: Omit<DoctorReport, "recommendations" | "ok
       id: issue.id,
       message: issue.message
     });
+  }
+
+  for (const recommendation of ecosystemRecommendations(report)) {
+    addRecommendation(recommendations, recommendation);
   }
 
   if (report.readme.minimumScore !== undefined && !report.readme.passedMinimumScore) {

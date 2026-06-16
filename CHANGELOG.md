@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.0 - 2026-06-15
+
+- Added ecosystem-aware `readme-forge doctor` recommendations.
+- Added package-manager-specific install, dev, build, and test command recommendations for Node projects.
+- Added workspace summary recommendations for detected npm/pnpm/yarn workspaces.
+- Added Python, Rust, and Go contributor test command recommendations when package scripts are unavailable.
+- Added CLI, web app, and library example-template recommendations.
+- Added tests covering web app, Python package, and workspace doctor recommendations.
+
 ## 0.13.0 - 2026-06-14
 
 - Added `readme-forge doctor` for README health and adoption diagnostics.

@@ -431,6 +431,34 @@ describe("readme-forge", () => {
     expect(parsed.recommendations.map((item) => item.id)).toContain("minimum-score");
   });
 
+  it("adds ecosystem-aware doctor recommendations for web apps and Python packages", async () => {
+    const webReport = await createDoctorReport({ root: path.join(fixturesRoot, "vite-web") });
+    const webRecommendations = new Map(webReport.recommendations.map((item) => [item.id, item]));
+
+    expect(webRecommendations.get("document-install-command")?.command).toBe("npm install");
+    expect(webRecommendations.get("document-dev-command")?.command).toBe("npm run dev");
+    expect(webRecommendations.get("document-build-command")?.command).toBe("npm run build");
+    expect(webRecommendations.get("document-test-command")?.command).toBe("npm run test");
+    expect(webRecommendations.get("add-web-local-development-example")?.command).toBe("readme-forge . --template web --dry-run");
+
+    const pythonReport = await createDoctorReport({ root: path.join(fixturesRoot, "python-package") });
+    const pythonRecommendations = new Map(pythonReport.recommendations.map((item) => [item.id, item]));
+
+    expect(pythonRecommendations.get("document-python-install-command")?.command).toBe("python -m pip install -e .");
+    expect(pythonRecommendations.get("document-python-test-command")?.command).toBe("python -m pytest");
+    expect(pythonRecommendations.get("add-library-usage-example")?.command).toBe("readme-forge . --template library --dry-run");
+  });
+
+  it("adds workspace-aware doctor recommendations", async () => {
+    const report = await createDoctorReport({ root: path.join(fixturesRoot, "npm-workspace") });
+    const recommendations = new Map(report.recommendations.map((item) => [item.id, item]));
+
+    expect(recommendations.get("document-install-command")?.command).toBe("npm install");
+    expect(recommendations.get("document-build-command")?.command).toBe("npm run build");
+    expect(recommendations.get("document-test-command")?.command).toBe("npm run test");
+    expect(recommendations.get("document-workspace-summary")?.message).toContain("2 detected workspace packages");
+  });
+
   it("uses config defaults while letting CLI flags override them", async () => {
     const root = await mkdir(path.join(os.tmpdir(), `readme-forge-config-${Date.now()}-${Math.random()}`), { recursive: true });
     await writeFile(path.join(root, "package.json"), JSON.stringify({
