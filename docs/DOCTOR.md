@@ -19,27 +19,60 @@ npx github:danisantgry/readme-forge doctor .
 
 Example output:
 
-```text
-readme-forge doctor
+````markdown
+# readme-forge doctor
 
-Project: my-cli
-Detected: TypeScript, JavaScript; package manager: npm
+## Project
 
-README
-- OK README.md
-- Score: 7/7 (100%)
-- Profile: maintainer
-- Generated diff: in sync
+| Field | Value |
+| --- | --- |
+| Name | my-cli |
+| Root | /workspace/my-cli |
+| Detected | TypeScript, JavaScript; package manager: npm |
 
-Adoption
-- OK readme-forge.config.json
-- TODO README workflow: not found
+## README
 
-Recommended next actions
-- Add a README quality workflow so pull requests cannot silently regress documentation.
-  readme-forge init . --github-actions --dry-run
+| Check | Value |
+| --- | --- |
+| Path | `README.md` |
+| Exists | OK |
+| Score | 7/7 (100%) |
+| Profile | maintainer |
+| Generated diff | in sync |
+| Minimum score | not configured |
 
-Status: ready with follow-ups
+## Adoption
+
+| Check | Status |
+| --- | --- |
+| `readme-forge.config.json` | OK |
+| README workflow | TODO - not found |
+
+## Recommended Next Actions
+
+1. Add a README quality workflow so pull requests cannot silently regress documentation.
+
+```bash
+readme-forge init . --github-actions --dry-run
+```
+
+## Status
+
+ready with follow-ups
+````
+
+## Markdown Reports
+
+Use `--report` to save a shareable Markdown report for issues, pull requests, release prep, or project documentation:
+
+```bash
+npx github:danisantgry/readme-forge doctor . --report docs/readme-health.md
+```
+
+The command still prints the report to the terminal. When combined with JSON output, stdout remains valid JSON and the Markdown report is written to disk:
+
+```bash
+npx github:danisantgry/readme-forge doctor . --format json --report docs/readme-health.md
 ```
 
 ## JSON Output

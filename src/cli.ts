@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
 import { loadConfig, type OutputFormat } from "./config.js";
@@ -23,7 +23,7 @@ type Args = {
   template: TemplatePreset;
 };
 
-const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--template"]);
+const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--report", "--template"]);
 const initOptionNames = new Set(["--min-score", "--path", "--profile", "--template"]);
 
 function getOption(argv: string[], name: string): string | undefined {
@@ -106,6 +106,7 @@ async function runDoctor(argv: string[]): Promise<void> {
   const minScoreOption = getOption(argv, "--min-score");
   const minScore = minScoreOption !== undefined ? Number(minScoreOption) : config.minScore;
   const output = getOption(argv, "--output") ?? config.output;
+  const reportPath = getOption(argv, "--report");
 
   if (!["auto", "cli", "library", "web"].includes(template)) {
     throw new Error("--template must be one of: auto, cli, library, web");
@@ -129,10 +130,19 @@ async function runDoctor(argv: string[]): Promise<void> {
     template: template as TemplatePreset
   });
 
+  const markdownReport = formatDoctorReport(report);
+
+  if (reportPath) {
+    const resolvedReportPath = path.resolve(root, reportPath);
+    await mkdir(path.dirname(resolvedReportPath), { recursive: true });
+    await writeFile(resolvedReportPath, `${markdownReport.trim()}\n`, "utf8");
+    console.error(`Wrote ${resolvedReportPath}`);
+  }
+
   if (format === "json") {
     console.log(JSON.stringify(report, null, 2));
   } else {
-    console.log(formatDoctorReport(report));
+    console.log(markdownReport);
   }
 
   if (report.readme.minimumScore !== undefined && !report.readme.passedMinimumScore) {

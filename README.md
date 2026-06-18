@@ -33,6 +33,12 @@ Run a full README health diagnosis:
 npx github:danisantgry/readme-forge doctor .
 ```
 
+Save a shareable Markdown health report:
+
+```bash
+npx github:danisantgry/readme-forge doctor . --report docs/readme-health.md
+```
+
 Require a minimum score for CI:
 
 ```bash
@@ -81,6 +87,7 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Generates deterministic release, issues, license, and npm badges when metadata is available.
 - Scaffolds `readme-forge.config.json` and an optional GitHub Actions README quality gate with `readme-forge init`.
 - Diagnoses README health, adoption status, generated diff status, and ecosystem-aware next actions with `readme-forge doctor`.
+- Exports shareable Markdown doctor reports with `readme-forge doctor --report`.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -142,10 +149,11 @@ Run a maintainer-oriented diagnosis:
 ```bash
 npm run dev -- doctor .
 npm run dev -- doctor . --format json
+npm run dev -- doctor . --report docs/readme-health.md
 npm run dev -- doctor . --min-score 90
 ```
 
-The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. Recommendations can include package-manager commands, workspace summaries, non-Node test commands, and CLI/web/library example templates. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
+The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. Recommendations can include package-manager commands, workspace summaries, non-Node test commands, and CLI/web/library example templates. Use `--report` to save the same diagnosis as Markdown for issues, pull requests, release prep, or project documentation. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
 
 The check command returns a numeric score and lists missing sections when the README needs work:
 
@@ -306,6 +314,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - fixture-based regression coverage for ecosystem detectors
 - generated examples that make output quality visible before installation
 - doctor reports that turn README quality, ecosystem metadata, and adoption gaps into next actions
+- shareable Markdown health reports for issues, PRs, and maintainer handoffs
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project

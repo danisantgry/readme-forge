@@ -332,6 +332,23 @@ function reportStatus(report: DoctorReport): string {
   return report.ok ? "ready" : "ready with follow-ups";
 }
 
+function tableValue(value: string | number): string {
+  return String(value).replaceAll("|", "\\|").replace(/\r?\n/g, " ");
+}
+
+function tableRow(label: string, value: string | number): string {
+  return `| ${tableValue(label)} | ${tableValue(value)} |`;
+}
+
+function markdownCode(value: string): string {
+  return `\`${value.replaceAll("`", "\\`")}\``;
+}
+
+function formatRecommendation(item: DoctorRecommendation, index: number): string {
+  const command = item.command ? `\n\n\`\`\`bash\n${item.command}\n\`\`\`` : "";
+  return `${index + 1}. ${item.message}${command}`;
+}
+
 export function formatDoctorReport(report: DoctorReport): string {
   const facts = [
     report.facts.languages.length ? report.facts.languages.join(", ") : "unknown language",
@@ -340,27 +357,47 @@ export function formatDoctorReport(report: DoctorReport): string {
   ].filter(Boolean);
   const workflowPath = report.adoption.workflowPath ? relativeCommandPath(report.root, report.adoption.workflowPath) : "not found";
   const recommendations = report.recommendations.length
-    ? report.recommendations.map((item) => `- ${item.message}${item.command ? `\n  ${item.command}` : ""}`).join("\n")
-    : "- No immediate documentation actions.";
+    ? report.recommendations.map(formatRecommendation).join("\n\n")
+    : "No immediate documentation actions.";
 
-  return `readme-forge doctor
+  const minimumScore =
+    report.readme.minimumScore !== undefined
+      ? `${report.readme.minimumScore}% (${report.readme.passedMinimumScore ? "passed" : "failed"})`
+      : "not configured";
 
-Project: ${report.facts.name}
-Root: ${report.root}
-Detected: ${facts.join("; ")}
+  return `# readme-forge doctor
 
-README
-- ${statusLabel(report.readme.exists)} ${relativeCommandPath(report.root, report.readme.path)}
-- Score: ${report.readme.quality.score}/${report.readme.quality.maxScore} (${report.readme.quality.percentage}%)
-- Profile: ${report.readme.quality.profile}
-- Generated diff: ${report.readme.changedFromGenerated ? "available" : "in sync"}
-${report.readme.minimumScore !== undefined ? `- Minimum score: ${report.readme.minimumScore}% (${report.readme.passedMinimumScore ? "passed" : "failed"})\n` : ""}
-Adoption
-- ${statusLabel(report.adoption.hasConfig)} readme-forge.config.json
-- ${statusLabel(report.adoption.hasReadmeWorkflow)} README workflow: ${workflowPath}
+## Project
 
-Recommended next actions
+| Field | Value |
+| --- | --- |
+${tableRow("Name", report.facts.name)}
+${tableRow("Root", report.root)}
+${tableRow("Detected", facts.join("; "))}
+
+## README
+
+| Check | Value |
+| --- | --- |
+${tableRow("Path", markdownCode(relativeCommandPath(report.root, report.readme.path)))}
+${tableRow("Exists", statusLabel(report.readme.exists))}
+${tableRow("Score", `${report.readme.quality.score}/${report.readme.quality.maxScore} (${report.readme.quality.percentage}%)`)}
+${tableRow("Profile", report.readme.quality.profile)}
+${tableRow("Generated diff", report.readme.changedFromGenerated ? "available" : "in sync")}
+${tableRow("Minimum score", minimumScore)}
+
+## Adoption
+
+| Check | Status |
+| --- | --- |
+${tableRow(markdownCode("readme-forge.config.json"), statusLabel(report.adoption.hasConfig))}
+${tableRow("README workflow", `${statusLabel(report.adoption.hasReadmeWorkflow)} - ${workflowPath}`)}
+
+## Recommended Next Actions
+
 ${recommendations}
 
-Status: ${reportStatus(report)}`;
+## Status
+
+${reportStatus(report)}`;
 }

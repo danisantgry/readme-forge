@@ -394,8 +394,10 @@ describe("readme-forge", () => {
     expect(report.recommendations.map((item) => item.id)).toContain("missing-install");
     expect(report.recommendations.map((item) => item.id)).toContain("add-config");
     expect(report.recommendations.map((item) => item.id)).toContain("add-readme-workflow");
-    expect(text).toContain("readme-forge doctor");
-    expect(text).toContain("Status: needs attention");
+    expect(text).toContain("# readme-forge doctor");
+    expect(text).toContain("## Recommended Next Actions");
+    expect(text).toContain("## Status");
+    expect(text).toContain("needs attention");
   });
 
   it("emits JSON doctor reports from the CLI", async () => {
@@ -429,6 +431,47 @@ describe("readme-forge", () => {
     expect(parsed.ok).toBe(false);
     expect(parsed.readme.passedMinimumScore).toBe(false);
     expect(parsed.recommendations.map((item) => item.id)).toContain("minimum-score");
+  });
+
+  it("writes shareable markdown doctor reports from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-doctor-report-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "doctor-report-demo",
+      description: "A doctor report demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# doctor-report-demo\n");
+
+    const result = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "doctor",
+      root,
+      "--report",
+      "docs/readme-health.md"
+    ]);
+    const report = await readFile(path.join(root, "docs", "readme-health.md"), "utf8");
+
+    expect(result.stdout).toContain("# readme-forge doctor");
+    expect(report).toContain("# readme-forge doctor");
+    expect(report).toContain("| Check | Value |");
+    expect(report).toContain("## Recommended Next Actions");
+    expect(report).toContain("readme-forge init . --dry-run");
+
+    const jsonResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "doctor",
+      root,
+      "--format",
+      "json",
+      "--report",
+      "docs/readme-health-json.md"
+    ]);
+    const parsed = JSON.parse(jsonResult.stdout) as { facts: { name: string } };
+    expect(parsed.facts.name).toBe("doctor-report-demo");
+    await expect(readFile(path.join(root, "docs", "readme-health-json.md"), "utf8")).resolves.toContain("# readme-forge doctor");
   });
 
   it("adds ecosystem-aware doctor recommendations for web apps and Python packages", async () => {

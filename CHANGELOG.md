@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.15.0 - 2026-06-18
+
+- Added `readme-forge doctor --report <path>` for shareable Markdown health reports.
+- Updated human-readable doctor output to render as Markdown with project, README, adoption, next-action, and status sections.
+- Kept `--format json` stdout parseable when `--report` writes a Markdown report to disk.
+- Added CLI regression coverage for Markdown report writing and JSON-plus-report workflows.
+- Updated README and doctor documentation with report export examples.
+
 ## 0.14.0 - 2026-06-15
 
 - Added ecosystem-aware `readme-forge doctor` recommendations.

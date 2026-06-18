@@ -7,6 +7,7 @@
 - Generate README drafts from repository metadata before releases.
 - Generate deterministic badges from repository, license, and package metadata.
 - Diagnose README health, ecosystem-specific documentation gaps, and adoption gaps with `readme-forge doctor`.
+- Export shareable Markdown health reports with `readme-forge doctor --report` for issues, PRs, releases, and handoffs.
 - Maintain a generated gallery that shows output across common project shapes.
 - Summarize workspace packages for monorepos without scanning deeply.
 - Compare generated output with the committed README to identify stale sections.
@@ -29,6 +30,7 @@ Codex can support maintenance by:
 - triaging issues into detector, template, CLI, and documentation categories
 - preparing release notes from merged changes
 - improving doctor recommendations from real maintainer workflows and ecosystem-specific conventions
+- turning doctor reports into issue comments, release checklists, and contributor-ready documentation tasks
 - maintaining quality gate thresholds as the checker gets smarter
 - proposing config defaults for different project types
 - improving the `init` adoption flow for common maintainer setups
