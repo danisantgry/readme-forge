@@ -13,6 +13,10 @@ Each example is regenerated from local metadata with `npm run examples:generate`
 | [Rust Crate](../examples/gallery/rust-crate/README.generated.md) | `library` | Rust; Rust crate | `npm run dev -- test/fixtures/rust-crate --dry-run --template library --no-badges` |
 | [Go Module](../examples/gallery/go-module/README.generated.md) | `library` | Go; Go module | `npm run dev -- test/fixtures/go-module --dry-run --template library --no-badges` |
 
+## Visual Comparison Report
+
+Open the committed [Vite README comparison report](../examples/report/vite-web.html) to inspect the score change, quality checks, focused diff, and complete sources produced by `readme-forge compare`.
+
 ## Regenerate
 
 ```bash

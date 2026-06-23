@@ -5,7 +5,9 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { analyzeProject } from "../src/analyzer.js";
+import { renderComparisonHtml } from "../src/compare.js";
 import { parseConfig } from "../src/config.js";
+import { diffLines, formatUnifiedDiff, summarizeDiff } from "../src/diff.js";
 import { createDoctorReport, formatDoctorReport } from "../src/doctor.js";
 import { generateReadme } from "../src/generator.js";
 import { createInitPlan } from "../src/init.js";
@@ -15,6 +17,16 @@ const exec = promisify(execFile);
 const fixturesRoot = path.join(process.cwd(), "test", "fixtures");
 
 describe("readme-forge", () => {
+  it("produces sequence-aware line diffs", () => {
+    const diff = diffLines("# Demo\n\n## Install\nnpm install\n", "# Demo\n\nA useful project.\n\n## Install\nnpm install\n");
+    const summary = summarizeDiff(diff);
+
+    expect(summary.additions).toBe(2);
+    expect(summary.removals).toBe(0);
+    expect(summary.unchanged).toBe(4);
+    expect(formatUnifiedDiff("# Demo\n## Install", "# Demo\nIntro\n## Install")).toContain("+ Intro");
+  });
+
   it("detects package metadata and generates a useful README", async () => {
     const root = await mkdir(path.join(os.tmpdir(), `readme-forge-${Date.now()}-${Math.random()}`), { recursive: true });
     await mkdir(path.join(root, "node_modules"), { recursive: true });
@@ -472,6 +484,52 @@ describe("readme-forge", () => {
     const parsed = JSON.parse(jsonResult.stdout) as { facts: { name: string } };
     expect(parsed.facts.name).toBe("doctor-report-demo");
     await expect(readFile(path.join(root, "docs", "readme-health-json.md"), "utf8")).resolves.toContain("# readme-forge doctor");
+  });
+
+  it("renders safe, self-contained README comparison reports", async () => {
+    const facts = await analyzeProject(path.join(fixturesRoot, "vite-web"));
+    const generated = generateReadme(facts, "web", { badges: false });
+    const html = renderComparisonHtml({
+      existing: "# Fixture <script>alert('no')</script>\n",
+      facts,
+      generated,
+      profile: "maintainer",
+      readmePath: path.join(fixturesRoot, "vite-web", "README.md"),
+      root: path.join(fixturesRoot, "vite-web")
+    });
+
+    expect(html).toContain("readme-forge comparison");
+    expect(html).toContain("Current score");
+    expect(html).toContain("Generated score");
+    expect(html).toContain("Focused line diff");
+    expect(html).toContain("&lt;script&gt;alert(&#39;no&#39;)&lt;/script&gt;");
+    expect(html).not.toContain("<script>alert('no')</script>");
+  });
+
+  it("writes HTML comparison reports from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-compare-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "compare-demo",
+      description: "A comparison report demo.",
+      license: "MIT",
+      scripts: { dev: "node index.js", test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# compare-demo\n");
+
+    const result = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "compare",
+      root,
+      "--output",
+      "reports/readme.html"
+    ]);
+    const report = await readFile(path.join(root, "reports", "readme.html"), "utf8");
+
+    expect(result.stdout).toContain("reports");
+    expect(report).toContain("compare-demo README comparison");
+    expect(report).toContain("percentage points");
+    expect(report).toContain("No project data was uploaded");
   });
 
   it("adds ecosystem-aware doctor recommendations for web apps and Python packages", async () => {

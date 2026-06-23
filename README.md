@@ -39,6 +39,14 @@ Save a shareable Markdown health report:
 npx github:danisantgry/readme-forge doctor . --report docs/readme-health.md
 ```
 
+Create a self-contained visual comparison before changing the README:
+
+```bash
+npx github:danisantgry/readme-forge compare .
+```
+
+![readme-forge visual comparison report](docs/compare-report.png)
+
 Require a minimum score for CI:
 
 ```bash
@@ -91,6 +99,8 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
+- Creates self-contained HTML comparison reports with before/after scores, quality checks, and focused line diffs.
+- Uses sequence-aware line diffs so isolated insertions do not make the rest of a README look replaced.
 - Includes fixture-based regression tests for TypeScript, Vite, Python, Rust, Go, and workspace project shapes.
 - Includes a generated README gallery for comparing output across real project shapes.
 - Optional Gemini enhancement through environment variables only.
@@ -154,6 +164,16 @@ npm run dev -- doctor . --min-score 90
 ```
 
 The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. Recommendations can include package-manager commands, workspace summaries, non-Node test commands, and CLI/web/library example templates. Use `--report` to save the same diagnosis as Markdown for issues, pull requests, release prep, or project documentation. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
+
+Generate a visual review report:
+
+```bash
+npm run dev -- compare .
+npm run dev -- compare . --output reports/readme.html
+npm run dev -- compare . --readme docs/PROJECT.md --profile strict
+```
+
+The report is a portable HTML file with current and generated scores, check-by-check results, a focused line diff, and both complete Markdown sources. It runs locally without a server and escapes project content before rendering. See [`docs/COMPARE.md`](docs/COMPARE.md) and the [committed example](examples/report/vite-web.html).
 
 The check command returns a numeric score and lists missing sections when the README needs work:
 
@@ -315,6 +335,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - generated examples that make output quality visible before installation
 - doctor reports that turn README quality, ecosystem metadata, and adoption gaps into next actions
 - shareable Markdown health reports for issues, PRs, and maintainer handoffs
+- visual before/after reports for reviewing generated documentation with non-CLI collaborators
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.16.0 - 2026-06-23
+
+- Added `readme-forge compare` for self-contained visual HTML review reports.
+- Added current/generated quality scores, check-by-check results, change statistics, focused diff context, and complete Markdown sources to comparison reports.
+- Added `--output`, `--readme`, template, profile, badge, config, and optional AI support to comparison workflows.
+- Replaced positional terminal diffs with sequence-aware line diffs that preserve unchanged content around insertions and removals.
+- Added HTML escaping for project-controlled report content and responsive desktop/mobile report layouts.
+- Added a reproducible Vite comparison example, visual documentation, and CLI/report regression tests.
+
 ## 0.15.0 - 2026-06-18
 
 - Added `readme-forge doctor --report <path>` for shareable Markdown health reports.

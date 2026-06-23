@@ -2,13 +2,15 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
+import { renderComparisonHtml } from "./compare.js";
 import { loadConfig } from "./config.js";
+import { formatUnifiedDiff } from "./diff.js";
 import { createDoctorReport, formatDoctorReport } from "./doctor.js";
 import { generateWithGemini } from "./gemini.js";
 import { generateReadme } from "./generator.js";
 import { createInitPlan, writeInitPlan } from "./init.js";
 import { assessReadmeQuality } from "./quality.js";
-const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--report", "--template"]);
+const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--readme", "--report", "--template"]);
 const initOptionNames = new Set(["--min-score", "--path", "--profile", "--template"]);
 function getOption(argv, name) {
     const index = argv.indexOf(name);
@@ -116,27 +118,46 @@ async function runDoctor(argv) {
         process.exitCode = 1;
     }
 }
-function createLineDiff(existing, generated) {
-    const oldLines = existing.trimEnd().split(/\r?\n/);
-    const newLines = generated.trimEnd().split(/\r?\n/);
-    const max = Math.max(oldLines.length, newLines.length);
-    const output = ["--- README.md", "+++ generated README.md"];
-    for (let index = 0; index < max; index += 1) {
-        const oldLine = oldLines[index];
-        const newLine = newLines[index];
-        if (oldLine === newLine)
-            continue;
-        if (oldLine !== undefined)
-            output.push(`- ${oldLine}`);
-        if (newLine !== undefined)
-            output.push(`+ ${newLine}`);
+async function runCompare(argv) {
+    const root = resolveRoot(argv);
+    const config = await loadConfig(root, getOption(argv, "--config"));
+    const template = getOption(argv, "--template") ?? config.template ?? "auto";
+    const profile = getOption(argv, "--profile") ?? config.profile ?? "maintainer";
+    if (!["auto", "cli", "library", "web"].includes(template)) {
+        throw new Error("--template must be one of: auto, cli, library, web");
     }
-    return output.length === 2 ? "README is already in sync with generated output." : output.join("\n");
+    if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
+        throw new Error("--profile must be one of: basic, standard, maintainer, strict");
+    }
+    const facts = await analyzeProject(root);
+    const generated = hasOption(argv, "--ai")
+        ? await generateWithGemini(facts)
+        : generateReadme(facts, template, {
+            badges: hasOption(argv, "--badges") || (!hasOption(argv, "--no-badges") && config.badges !== false)
+        });
+    const readmePath = path.resolve(root, getOption(argv, "--readme") ?? config.output ?? "README.md");
+    const outputPath = path.resolve(root, getOption(argv, "--output") ?? "readme-forge-report.html");
+    const existing = await readFile(readmePath, "utf8").catch(() => "");
+    const html = renderComparisonHtml({
+        existing,
+        facts,
+        generated,
+        profile: profile,
+        readmePath,
+        root
+    });
+    await mkdir(path.dirname(outputPath), { recursive: true });
+    await writeFile(outputPath, html, "utf8");
+    console.log(`Wrote ${outputPath}`);
 }
 async function main() {
     const argv = process.argv.slice(2);
     if (argv[0] === "doctor") {
         await runDoctor(argv.slice(1));
+        return;
+    }
+    if (argv[0] === "compare") {
+        await runCompare(argv.slice(1));
         return;
     }
     if (argv[0] === "init") {
@@ -210,7 +231,7 @@ async function main() {
             console.log(JSON.stringify({ output: args.output, changed: existing.trimEnd() !== readme.trimEnd(), readme, facts }, null, 2));
             return;
         }
-        console.log(createLineDiff(existing, readme));
+        console.log(formatUnifiedDiff(existing, readme));
         return;
     }
     if (args.dryRun) {

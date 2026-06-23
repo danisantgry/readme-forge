@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeProject } from "../dist/analyzer.js";
+import { renderComparisonHtml } from "../dist/compare.js";
 import { generateReadme } from "../dist/generator.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -100,6 +101,10 @@ Each example is regenerated from local metadata with \`npm run examples:generate
 | --- | --- | --- | --- |
 ${tableRows}
 
+## Visual Comparison Report
+
+Open the committed [Vite README comparison report](../examples/report/vite-web.html) to inspect the score change, quality checks, focused diff, and complete sources produced by \`readme-forge compare\`.
+
 ## Regenerate
 
 \`\`\`bash
@@ -142,6 +147,21 @@ async function collectOutputs() {
   outputs.push({
     path: path.join(repoRoot, "docs", "GALLERY.md"),
     content: renderGallery(galleryRows)
+  });
+
+  const reportRoot = path.join(repoRoot, "test", "fixtures", "vite-web");
+  const reportFacts = await analyzeProject(reportRoot);
+  const reportGenerated = generateReadme(reportFacts, "web", { badges: false });
+  outputs.push({
+    path: path.join(repoRoot, "examples", "report", "vite-web.html"),
+    content: renderComparisonHtml({
+      existing: "# fixture-vite-web\n\nA small Vite application.\n",
+      facts: reportFacts,
+      generated: reportGenerated,
+      profile: "maintainer",
+      readmePath: path.join(reportRoot, "README.md"),
+      root: reportRoot
+    })
   });
 
   return outputs;
