@@ -33,6 +33,12 @@ Run a full README health diagnosis:
 npx github:danisantgry/readme-forge doctor .
 ```
 
+Create a complete local review bundle without overwriting `README.md`:
+
+```bash
+npx github:danisantgry/readme-forge review .
+```
+
 Save a shareable Markdown health report:
 
 ```bash
@@ -102,6 +108,7 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Scaffolds `readme-forge.config.json` and an optional GitHub Actions README quality gate with `readme-forge init`.
 - Diagnoses README health, adoption status, generated diff status, and ecosystem-aware next actions with `readme-forge doctor`.
 - Exports shareable Markdown doctor reports with `readme-forge doctor --report`.
+- Creates local README review bundles with generated output, visual comparison, Markdown summary, doctor report, PR comment, and JSON data.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -171,6 +178,16 @@ npm run dev -- doctor . --min-score 90
 ```
 
 The doctor command reports detected project metadata, README score, generated diff status, config adoption, GitHub Actions adoption, and recommended next actions. Recommendations can include package-manager commands, workspace summaries, non-Node test commands, and CLI/web/library example templates. Use `--report` to save the same diagnosis as Markdown for issues, pull requests, release prep, or project documentation. See [`docs/DOCTOR.md`](docs/DOCTOR.md).
+
+Create a complete local review bundle:
+
+```bash
+npm run dev -- review .
+npm run dev -- review . --output reports/readme-review
+npm run dev -- review . --readme docs/PROJECT.md --profile strict --min-score 90
+```
+
+The review command writes a safe local bundle containing `README.generated.md`, `compare.html`, `compare.md`, `doctor.md`, `PR_COMMENT.md`, `summary.json`, and an index `README.md`. It does not overwrite the project README. By default it runs locally without uploading project data; AI refinement is opt-in through `--ai` or config. See [`docs/REVIEW.md`](docs/REVIEW.md).
 
 Generate a visual review report:
 
@@ -346,6 +363,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - shareable Markdown health reports for issues, PRs, and maintainer handoffs
 - visual before/after reports for reviewing generated documentation with non-CLI collaborators
 - GitHub-friendly comparison summaries for PR comments and CI output
+- complete local review bundles for maintainers who want one folder with every review artifact
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project

@@ -3,5 +3,7 @@ coverage/
 .env
 README.generated.md
 !examples/gallery/**/README.generated.md
+readme-forge-review/
+.readme-forge/
 *.log
 .DS_Store

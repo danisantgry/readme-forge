@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.18.0 - 2026-06-25
+
+- Added `readme-forge review` for complete local README review bundles.
+- Added generated README, visual comparison, Markdown comparison, doctor report, PR comment, summary JSON, and bundle index artifacts.
+- Added analyzer ignores for generated review bundle folders so repeated reviews do not pollute project metadata.
+- Added review bundle documentation and CLI regression coverage.
+- Kept review bundles safe by writing only inside the requested output folder instead of overwriting the project README.
+
 ## 0.17.0 - 2026-06-24
 
 - Added `readme-forge compare --format markdown` for GitHub-friendly comparison summaries.

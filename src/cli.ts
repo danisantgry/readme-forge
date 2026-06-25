@@ -10,6 +10,7 @@ import { generateWithGemini } from "./gemini.js";
 import { generateReadme, type TemplatePreset } from "./generator.js";
 import { createInitPlan, writeInitPlan } from "./init.js";
 import { assessReadmeQuality, type QualityProfile } from "./quality.js";
+import { writeReviewBundle } from "./review.js";
 
 type Args = {
   root: string;
@@ -171,7 +172,8 @@ async function runCompare(argv: string[]): Promise<void> {
   }
 
   const facts = await analyzeProject(root);
-  const generated = hasOption(argv, "--ai")
+  const ai = hasOption(argv, "--ai") || config.ai === true;
+  const generated = ai
     ? await generateWithGemini(facts)
     : generateReadme(facts, template as TemplatePreset, {
       badges: hasOption(argv, "--badges") || (!hasOption(argv, "--no-badges") && config.badges !== false)
@@ -179,6 +181,7 @@ async function runCompare(argv: string[]): Promise<void> {
   const readmePath = path.resolve(root, getOption(argv, "--readme") ?? config.output ?? "README.md");
   const existing = await readFile(readmePath, "utf8").catch(() => "");
   const reportOptions = {
+    ai,
     existing,
     facts,
     generated,
@@ -225,6 +228,55 @@ async function runCompare(argv: string[]): Promise<void> {
   console.log(`Wrote ${outputPath}`);
 }
 
+async function runReview(argv: string[]): Promise<void> {
+  const root = resolveRoot(argv);
+  const config = await loadConfig(root, getOption(argv, "--config"));
+  const template = getOption(argv, "--template") ?? config.template ?? "auto";
+  const profile = getOption(argv, "--profile") ?? config.profile ?? "maintainer";
+  const minScoreOption = getOption(argv, "--min-score");
+  const minScore = minScoreOption !== undefined ? Number(minScoreOption) : config.minScore;
+  if (!["auto", "cli", "library", "web"].includes(template)) {
+    throw new Error("--template must be one of: auto, cli, library, web");
+  }
+  if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
+    throw new Error("--profile must be one of: basic, standard, maintainer, strict");
+  }
+  if (minScore !== undefined && (!Number.isInteger(minScore) || minScore < 0 || minScore > 100)) {
+    throw new Error("--min-score must be an integer between 0 and 100");
+  }
+
+  const readmePath = path.resolve(root, getOption(argv, "--readme") ?? config.output ?? "README.md");
+  const outputDir = path.resolve(root, getOption(argv, "--output") ?? "readme-forge-review");
+  const badges = hasOption(argv, "--badges") || (!hasOption(argv, "--no-badges") && config.badges !== false);
+  const doctorReport = await createDoctorReport({
+    root,
+    output: readmePath,
+    badges,
+    minScore,
+    profile: profile as QualityProfile,
+    template: template as TemplatePreset
+  });
+  const ai = hasOption(argv, "--ai") || config.ai === true;
+  const generated = ai
+    ? await generateWithGemini(doctorReport.facts)
+    : generateReadme(doctorReport.facts, template as TemplatePreset, { badges });
+  const existing = await readFile(readmePath, "utf8").catch(() => "");
+  const result = await writeReviewBundle({
+    doctorReport,
+    ai,
+    existing,
+    generated,
+    outputDir,
+    readmePath,
+    root
+  });
+
+  console.log(`Created README review bundle at ${result.directory}`);
+  for (const filePath of Object.values(result.files)) {
+    console.log(`- ${filePath}`);
+  }
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   if (argv[0] === "doctor") {
@@ -234,6 +286,11 @@ async function main(): Promise<void> {
 
   if (argv[0] === "compare") {
     await runCompare(argv.slice(1));
+    return;
+  }
+
+  if (argv[0] === "review") {
+    await runReview(argv.slice(1));
     return;
   }
 

@@ -497,7 +497,17 @@ describe("readme-forge", () => {
       readmePath: path.join(fixturesRoot, "vite-web", "README.md"),
       root: path.join(fixturesRoot, "vite-web")
     });
+    const aiSummary = createComparisonReport({
+      ai: true,
+      existing: "# Fixture\n",
+      facts,
+      generated,
+      profile: "maintainer",
+      readmePath: path.join(fixturesRoot, "vite-web", "README.md"),
+      root: path.join(fixturesRoot, "vite-web")
+    });
     const markdown = formatComparisonMarkdown(summary);
+    const aiMarkdown = formatComparisonMarkdown(aiSummary);
     const html = renderComparisonHtml({
       existing: "# Fixture <script>alert('no')</script>\n",
       facts,
@@ -517,6 +527,8 @@ describe("readme-forge", () => {
     expect(markdown).toContain("# README Comparison");
     expect(markdown).toContain("| Current |");
     expect(markdown).toContain("readme-forge compare . --output reports/readme.html");
+    expect(markdown).toContain("No project data was uploaded");
+    expect(aiMarkdown).toContain("optional AI refinement");
   });
 
   it("writes HTML comparison reports from the CLI", async () => {
@@ -600,6 +612,51 @@ describe("readme-forge", () => {
 
     expect(outputResult.stderr).toContain("Wrote");
     expect(savedSummary).toContain("# README Comparison");
+  });
+
+  it("creates a local README review bundle from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-review-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "review-demo",
+      description: "A review bundle demo.",
+      license: "MIT",
+      scripts: { build: "tsc", test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# review-demo\n");
+
+    const result = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "review",
+      root,
+      "--output",
+      "readme-forge-review",
+      "--min-score",
+      "90"
+    ]);
+    const reviewDir = path.join(root, "readme-forge-review");
+    const index = await readFile(path.join(reviewDir, "README.md"), "utf8");
+    const generated = await readFile(path.join(reviewDir, "README.generated.md"), "utf8");
+    const prComment = await readFile(path.join(reviewDir, "PR_COMMENT.md"), "utf8");
+    const summary = JSON.parse(await readFile(path.join(reviewDir, "summary.json"), "utf8")) as {
+      project: { name: string; readmePath: string };
+      readme: { generatedScore: number; generatedWithAi: boolean; improvement: number };
+      files: Record<string, string>;
+    };
+    const facts = await analyzeProject(root);
+    const originalReadme = await readFile(path.join(root, "README.md"), "utf8");
+
+    expect(result.stdout).toContain("Created README review bundle");
+    expect(index).toContain("# readme-forge Review Bundle");
+    expect(generated).toContain("# review-demo");
+    expect(prComment).toContain("## README Review");
+    expect(summary.project.name).toBe("review-demo");
+    expect(summary.project.readmePath).toBe("README.md");
+    expect(summary.readme.generatedScore).toBeGreaterThan(summary.readme.improvement);
+    expect(summary.readme.generatedWithAi).toBe(false);
+    expect(summary.files.generatedReadme).toBe("readme-forge-review/README.generated.md");
+    expect(originalReadme).toBe("# review-demo\n");
+    expect(facts.files).not.toContain("readme-forge-review");
   });
 
   it("adds ecosystem-aware doctor recommendations for web apps and Python packages", async () => {

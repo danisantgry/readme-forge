@@ -88,7 +88,7 @@ function parseGitHubRepository(url: string): RepositoryInfo {
   };
 }
 
-const ignoredEntries = new Set([".git", "node_modules", "dist", "coverage"]);
+const ignoredEntries = new Set([".git", ".readme-forge", "node_modules", "dist", "coverage", "readme-forge-review"]);
 
 async function listProjectEntries(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true });

@@ -18,6 +18,11 @@ function qualityLabel(report) {
         return "Developing";
     return "Needs work";
 }
+function privacyNotice(ai) {
+    return ai
+        ? "Generated with optional AI refinement. Project metadata may have been sent to the configured Gemini API."
+        : "Generated locally by readme-forge. No project data was uploaded.";
+}
 function lineNumber(value) {
     return value === undefined ? "" : String(value);
 }
@@ -100,6 +105,10 @@ export function createComparisonReport(options) {
             quality: generatedQuality
         },
         improvement,
+        generation: {
+            ai: options.ai === true,
+            privacyNotice: privacyNotice(options.ai === true)
+        },
         profile,
         project: {
             name: options.facts.name,
@@ -159,7 +168,7 @@ readme-forge compare . --output reports/readme.html
 readme-forge . --diff
 \`\`\`
 
-Generated locally by readme-forge. No project data was uploaded.`;
+${report.generation.privacyNotice}`;
 }
 export function renderComparisonHtml(options) {
     const report = createComparisonReport(options);
@@ -277,7 +286,7 @@ export function renderComparisonHtml(options) {
       </details>
     </section>
 
-    <footer>Generated locally by readme-forge. No project data was uploaded.</footer>
+    <footer>${escapeHtml(report.generation.privacyNotice)}</footer>
   </main>
 </body>
 </html>

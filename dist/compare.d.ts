@@ -1,6 +1,7 @@
 import type { ProjectFacts } from "./analyzer.js";
 import { type QualityProfile, type ReadmeQualityReport } from "./quality.js";
 export type ComparisonReportOptions = {
+    ai?: boolean;
     existing: string;
     facts: ProjectFacts;
     generated: string;
@@ -25,6 +26,10 @@ export type ComparisonReport = {
         quality: ReadmeQualityReport;
     };
     improvement: number;
+    generation: {
+        ai: boolean;
+        privacyNotice: string;
+    };
     profile: QualityProfile;
     project: {
         name: string;
