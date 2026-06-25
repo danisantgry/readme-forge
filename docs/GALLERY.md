@@ -17,6 +17,8 @@ Each example is regenerated from local metadata with `npm run examples:generate`
 
 Open the committed [Vite README comparison report](../examples/report/vite-web.html) to inspect the score change, quality checks, focused diff, and complete sources produced by `readme-forge compare`.
 
+For GitHub issues, pull requests, and CI summaries, inspect the committed [Markdown comparison summary](../examples/report/vite-web.md).
+
 ## Regenerate
 
 ```bash

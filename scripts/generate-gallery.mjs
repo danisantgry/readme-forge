@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeProject } from "../dist/analyzer.js";
-import { renderComparisonHtml } from "../dist/compare.js";
+import { createComparisonReport, formatComparisonMarkdown, renderComparisonHtml } from "../dist/compare.js";
 import { generateReadme } from "../dist/generator.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -105,6 +105,8 @@ ${tableRows}
 
 Open the committed [Vite README comparison report](../examples/report/vite-web.html) to inspect the score change, quality checks, focused diff, and complete sources produced by \`readme-forge compare\`.
 
+For GitHub issues, pull requests, and CI summaries, inspect the committed [Markdown comparison summary](../examples/report/vite-web.md).
+
 ## Regenerate
 
 \`\`\`bash
@@ -152,16 +154,21 @@ async function collectOutputs() {
   const reportRoot = path.join(repoRoot, "test", "fixtures", "vite-web");
   const reportFacts = await analyzeProject(reportRoot);
   const reportGenerated = generateReadme(reportFacts, "web", { badges: false });
+  const reportOptions = {
+    existing: "# fixture-vite-web\n\nA small Vite application.\n",
+    facts: reportFacts,
+    generated: reportGenerated,
+    profile: "maintainer",
+    readmePath: path.join(reportRoot, "README.md"),
+    root: reportRoot
+  };
   outputs.push({
     path: path.join(repoRoot, "examples", "report", "vite-web.html"),
-    content: renderComparisonHtml({
-      existing: "# fixture-vite-web\n\nA small Vite application.\n",
-      facts: reportFacts,
-      generated: reportGenerated,
-      profile: "maintainer",
-      readmePath: path.join(reportRoot, "README.md"),
-      root: reportRoot
-    })
+    content: renderComparisonHtml(reportOptions)
+  });
+  outputs.push({
+    path: path.join(repoRoot, "examples", "report", "vite-web.md"),
+    content: `${formatComparisonMarkdown(createComparisonReport(reportOptions)).trim()}\n`
   });
 
   return outputs;

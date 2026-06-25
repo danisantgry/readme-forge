@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.17.0 - 2026-06-24
+
+- Added `readme-forge compare --format markdown` for GitHub-friendly comparison summaries.
+- Added `readme-forge compare --format json` for automation and agent workflows.
+- Added structured comparison data with changed status, quality change, line-change counts, current/generated scores, and check results.
+- Added a committed Markdown comparison example beside the existing HTML report.
+- Updated comparison documentation with issue, PR, CI, and JSON automation workflows.
+
 ## 0.16.0 - 2026-06-23
 
 - Added `readme-forge compare` for self-contained visual HTML review reports.

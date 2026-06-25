@@ -1,6 +1,6 @@
 {
   "name": "readme-forge",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Generate polished README files from project metadata, with optional Gemini enhancement through environment variables.",
   "type": "module",
   "engines": {

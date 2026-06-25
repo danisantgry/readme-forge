@@ -45,6 +45,12 @@ Create a self-contained visual comparison before changing the README:
 npx github:danisantgry/readme-forge compare .
 ```
 
+Create a GitHub-friendly comparison summary for an issue, PR, or CI step:
+
+```bash
+npx github:danisantgry/readme-forge compare . --format markdown
+```
+
 ![readme-forge visual comparison report](docs/compare-report.png)
 
 Require a minimum score for CI:
@@ -100,6 +106,7 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
 - Creates self-contained HTML comparison reports with before/after scores, quality checks, and focused line diffs.
+- Emits Markdown and JSON comparison summaries for GitHub issues, pull requests, and CI step summaries.
 - Uses sequence-aware line diffs so isolated insertions do not make the rest of a README look replaced.
 - Includes fixture-based regression tests for TypeScript, Vite, Python, Rust, Go, and workspace project shapes.
 - Includes a generated README gallery for comparing output across real project shapes.
@@ -170,10 +177,12 @@ Generate a visual review report:
 ```bash
 npm run dev -- compare .
 npm run dev -- compare . --output reports/readme.html
+npm run dev -- compare . --format markdown
+npm run dev -- compare . --format json
 npm run dev -- compare . --readme docs/PROJECT.md --profile strict
 ```
 
-The report is a portable HTML file with current and generated scores, check-by-check results, a focused line diff, and both complete Markdown sources. It runs locally without a server and escapes project content before rendering. See [`docs/COMPARE.md`](docs/COMPARE.md) and the [committed example](examples/report/vite-web.html).
+The default report is a portable HTML file with current and generated scores, check-by-check results, a focused line diff, and both complete Markdown sources. `--format markdown` creates a compact summary that can be pasted into GitHub issues, pull requests, or CI step summaries. `--format json` emits the same comparison data for automation. See [`docs/COMPARE.md`](docs/COMPARE.md), the [committed HTML example](examples/report/vite-web.html), and the [committed Markdown summary](examples/report/vite-web.md).
 
 The check command returns a numeric score and lists missing sections when the README needs work:
 
@@ -336,6 +345,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - doctor reports that turn README quality, ecosystem metadata, and adoption gaps into next actions
 - shareable Markdown health reports for issues, PRs, and maintainer handoffs
 - visual before/after reports for reviewing generated documentation with non-CLI collaborators
+- GitHub-friendly comparison summaries for PR comments and CI output
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project

@@ -2,7 +2,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
-import { renderComparisonHtml } from "./compare.js";
+import { createComparisonReport, formatComparisonMarkdown, renderComparisonHtml } from "./compare.js";
 import { loadConfig } from "./config.js";
 import { formatUnifiedDiff } from "./diff.js";
 import { createDoctorReport, formatDoctorReport } from "./doctor.js";
@@ -123,11 +123,15 @@ async function runCompare(argv) {
     const config = await loadConfig(root, getOption(argv, "--config"));
     const template = getOption(argv, "--template") ?? config.template ?? "auto";
     const profile = getOption(argv, "--profile") ?? config.profile ?? "maintainer";
+    const format = getOption(argv, "--format") ?? "html";
     if (!["auto", "cli", "library", "web"].includes(template)) {
         throw new Error("--template must be one of: auto, cli, library, web");
     }
     if (!["basic", "standard", "maintainer", "strict"].includes(profile)) {
         throw new Error("--profile must be one of: basic, standard, maintainer, strict");
+    }
+    if (!["html", "markdown", "json"].includes(format)) {
+        throw new Error("compare --format must be one of: html, markdown, json");
     }
     const facts = await analyzeProject(root);
     const generated = hasOption(argv, "--ai")
@@ -136,16 +140,43 @@ async function runCompare(argv) {
             badges: hasOption(argv, "--badges") || (!hasOption(argv, "--no-badges") && config.badges !== false)
         });
     const readmePath = path.resolve(root, getOption(argv, "--readme") ?? config.output ?? "README.md");
-    const outputPath = path.resolve(root, getOption(argv, "--output") ?? "readme-forge-report.html");
     const existing = await readFile(readmePath, "utf8").catch(() => "");
-    const html = renderComparisonHtml({
+    const reportOptions = {
         existing,
         facts,
         generated,
         profile: profile,
         readmePath,
         root
-    });
+    };
+    const output = getOption(argv, "--output");
+    const compareFormat = format;
+    if (compareFormat === "json") {
+        const json = JSON.stringify(createComparisonReport(reportOptions), null, 2);
+        if (!output) {
+            console.log(json);
+            return;
+        }
+        const outputPath = path.resolve(root, output);
+        await mkdir(path.dirname(outputPath), { recursive: true });
+        await writeFile(outputPath, `${json}\n`, "utf8");
+        console.error(`Wrote ${outputPath}`);
+        return;
+    }
+    if (compareFormat === "markdown") {
+        const markdown = formatComparisonMarkdown(createComparisonReport(reportOptions));
+        if (!output) {
+            console.log(markdown);
+            return;
+        }
+        const outputPath = path.resolve(root, output);
+        await mkdir(path.dirname(outputPath), { recursive: true });
+        await writeFile(outputPath, `${markdown.trim()}\n`, "utf8");
+        console.error(`Wrote ${outputPath}`);
+        return;
+    }
+    const outputPath = path.resolve(root, output ?? "readme-forge-report.html");
+    const html = renderComparisonHtml(reportOptions);
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(outputPath, html, "utf8");
     console.log(`Wrote ${outputPath}`);

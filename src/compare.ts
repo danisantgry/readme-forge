@@ -12,6 +12,31 @@ export type ComparisonReportOptions = {
   root: string;
 };
 
+export type ComparisonReport = {
+  changed: boolean;
+  current: {
+    label: string;
+    quality: ReadmeQualityReport;
+  };
+  detected: string[];
+  diff: {
+    additions: number;
+    removals: number;
+    unchanged: number;
+  };
+  generated: {
+    label: string;
+    quality: ReadmeQualityReport;
+  };
+  improvement: number;
+  profile: QualityProfile;
+  project: {
+    name: string;
+    packageManager: ProjectFacts["packageManager"];
+    readmePath: string;
+  };
+};
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -78,7 +103,24 @@ function relativePath(root: string, target: string): string {
   return relative && !relative.startsWith("..") ? relative : target;
 }
 
-export function renderComparisonHtml(options: ComparisonReportOptions): string {
+function tableValue(value: string | number): string {
+  return String(value).replaceAll("|", "\\|").replace(/\r?\n/g, " ");
+}
+
+function markdownCode(value: string | number): string {
+  return `\`${tableValue(value).replaceAll("`", "\\`")}\``;
+}
+
+function checklistValue(report: ReadmeQualityReport): string {
+  const missing = report.issues.map((issue) => issue.id.replace(/^missing-/, ""));
+  return missing.length ? missing.map(markdownCode).join(", ") : "none";
+}
+
+function markdownCheckStatus(passed: boolean): string {
+  return passed ? "PASS" : "MISS";
+}
+
+export function createComparisonReport(options: ComparisonReportOptions): ComparisonReport {
   const profile = options.profile ?? "maintainer";
   const existingQuality = assessReadmeQuality(options.existing, options.facts, profile);
   const generatedQuality = assessReadmeQuality(options.generated, options.facts, profile);
@@ -86,8 +128,96 @@ export function renderComparisonHtml(options: ComparisonReportOptions): string {
   const summary = summarizeDiff(diff);
   const improvement = generatedQuality.percentage - existingQuality.percentage;
   const detected = [...options.facts.languages, ...options.facts.frameworks];
-  const diffRows = compactDiff(diff).map(renderDiffRow).join("\n");
   const readmePath = relativePath(options.root, options.readmePath);
+
+  return {
+    changed: options.existing.trimEnd() !== options.generated.trimEnd(),
+    current: {
+      label: qualityLabel(existingQuality),
+      quality: existingQuality
+    },
+    detected,
+    diff: summary,
+    generated: {
+      label: qualityLabel(generatedQuality),
+      quality: generatedQuality
+    },
+    improvement,
+    profile,
+    project: {
+      name: options.facts.name,
+      packageManager: options.facts.packageManager,
+      readmePath
+    }
+  };
+}
+
+export function formatComparisonMarkdown(report: ComparisonReport): string {
+  const generatedChecks = new Map(report.generated.quality.checks.map((check) => [check.id, check]));
+  const checks = report.current.quality.checks
+    .map((check) => {
+      const generatedCheck = generatedChecks.get(check.id);
+      return `| \`${tableValue(check.id)}\` | ${markdownCheckStatus(check.passed)} | ${markdownCheckStatus(generatedCheck?.passed === true)} | ${tableValue(check.message)} |`;
+    })
+    .join("\n");
+  const changeLabel = report.improvement >= 0 ? `+${report.improvement}` : String(report.improvement);
+
+  return `# README Comparison
+
+## Project
+
+| Field | Value |
+| --- | --- |
+| Name | ${tableValue(report.project.name)} |
+| README | ${markdownCode(report.project.readmePath)} |
+| Profile | ${markdownCode(report.profile)} |
+| Package manager | ${markdownCode(report.project.packageManager)} |
+| Detected | ${tableValue(report.detected.length ? report.detected.join(", ") : "project metadata")} |
+
+## Score
+
+| Version | Score | Status | Missing checks |
+| --- | --- | --- | --- |
+| Current | ${report.current.quality.score}/${report.current.quality.maxScore} (${report.current.quality.percentage}%) | ${report.current.label} | ${checklistValue(report.current.quality)} |
+| Generated | ${report.generated.quality.score}/${report.generated.quality.maxScore} (${report.generated.quality.percentage}%) | ${report.generated.label} | ${checklistValue(report.generated.quality)} |
+
+## Quality Checks
+
+| Check | Current | Generated | What it verifies |
+| --- | --- | --- | --- |
+${checks}
+
+## Diff Summary
+
+| Metric | Value |
+| --- | --- |
+| Changed | ${report.changed ? "yes" : "no"} |
+| Quality change | ${changeLabel} percentage points |
+| Additions | +${report.diff.additions} |
+| Removals | -${report.diff.removals} |
+| Unchanged lines | ${report.diff.unchanged} |
+
+## Review Commands
+
+\`\`\`bash
+readme-forge compare . --output reports/readme.html
+readme-forge . --diff
+\`\`\`
+
+Generated locally by readme-forge. No project data was uploaded.`;
+}
+
+export function renderComparisonHtml(options: ComparisonReportOptions): string {
+  const report = createComparisonReport(options);
+  const profile = report.profile;
+  const existingQuality = report.current.quality;
+  const generatedQuality = report.generated.quality;
+  const diff = diffLines(options.existing, options.generated);
+  const summary = report.diff;
+  const improvement = report.improvement;
+  const detected = report.detected;
+  const diffRows = compactDiff(diff).map(renderDiffRow).join("\n");
+  const readmePath = report.project.readmePath;
 
   return `<!doctype html>
 <html lang="en">

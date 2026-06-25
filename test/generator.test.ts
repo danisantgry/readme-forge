@@ -5,7 +5,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { analyzeProject } from "../src/analyzer.js";
-import { renderComparisonHtml } from "../src/compare.js";
+import { createComparisonReport, formatComparisonMarkdown, renderComparisonHtml } from "../src/compare.js";
 import { parseConfig } from "../src/config.js";
 import { diffLines, formatUnifiedDiff, summarizeDiff } from "../src/diff.js";
 import { createDoctorReport, formatDoctorReport } from "../src/doctor.js";
@@ -489,6 +489,15 @@ describe("readme-forge", () => {
   it("renders safe, self-contained README comparison reports", async () => {
     const facts = await analyzeProject(path.join(fixturesRoot, "vite-web"));
     const generated = generateReadme(facts, "web", { badges: false });
+    const summary = createComparisonReport({
+      existing: "# Fixture\n",
+      facts,
+      generated,
+      profile: "maintainer",
+      readmePath: path.join(fixturesRoot, "vite-web", "README.md"),
+      root: path.join(fixturesRoot, "vite-web")
+    });
+    const markdown = formatComparisonMarkdown(summary);
     const html = renderComparisonHtml({
       existing: "# Fixture <script>alert('no')</script>\n",
       facts,
@@ -504,6 +513,10 @@ describe("readme-forge", () => {
     expect(html).toContain("Focused line diff");
     expect(html).toContain("&lt;script&gt;alert(&#39;no&#39;)&lt;/script&gt;");
     expect(html).not.toContain("<script>alert('no')</script>");
+    expect(summary.generated.quality.percentage).toBeGreaterThanOrEqual(summary.current.quality.percentage);
+    expect(markdown).toContain("# README Comparison");
+    expect(markdown).toContain("| Current |");
+    expect(markdown).toContain("readme-forge compare . --output reports/readme.html");
   });
 
   it("writes HTML comparison reports from the CLI", async () => {
@@ -530,6 +543,63 @@ describe("readme-forge", () => {
     expect(report).toContain("compare-demo README comparison");
     expect(report).toContain("percentage points");
     expect(report).toContain("No project data was uploaded");
+  });
+
+  it("emits Markdown and JSON comparison summaries from the CLI", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-compare-format-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "compare-format-demo",
+      description: "A comparison format demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# compare-format-demo\n");
+
+    const markdownResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "compare",
+      root,
+      "--format",
+      "markdown"
+    ]);
+    expect(markdownResult.stdout).toContain("# README Comparison");
+    expect(markdownResult.stdout).toContain("## Quality Checks");
+    expect(markdownResult.stdout).toContain("readme-forge . --diff");
+
+    const jsonResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "compare",
+      root,
+      "--format",
+      "json"
+    ]);
+    const parsed = JSON.parse(jsonResult.stdout) as {
+      changed: boolean;
+      current: { quality: { percentage: number } };
+      generated: { quality: { percentage: number } };
+      project: { name: string };
+    };
+
+    expect(parsed.project.name).toBe("compare-format-demo");
+    expect(parsed.changed).toBe(true);
+    expect(parsed.generated.quality.percentage).toBeGreaterThanOrEqual(parsed.current.quality.percentage);
+
+    const outputResult = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "compare",
+      root,
+      "--format",
+      "markdown",
+      "--output",
+      "reports/readme-summary.md"
+    ]);
+    const savedSummary = await readFile(path.join(root, "reports", "readme-summary.md"), "utf8");
+
+    expect(outputResult.stderr).toContain("Wrote");
+    expect(savedSummary).toContain("# README Comparison");
   });
 
   it("adds ecosystem-aware doctor recommendations for web apps and Python packages", async () => {
