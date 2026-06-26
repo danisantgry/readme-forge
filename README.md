@@ -39,6 +39,13 @@ Create a complete local review bundle without overwriting `README.md`:
 npx github:danisantgry/readme-forge review .
 ```
 
+Safely apply the reviewed README after checking the bundle:
+
+```bash
+npx github:danisantgry/readme-forge apply . --dry-run
+npx github:danisantgry/readme-forge apply .
+```
+
 Save a shareable Markdown health report:
 
 ```bash
@@ -109,6 +116,7 @@ See the full [generated README gallery](docs/GALLERY.md).
 - Diagnoses README health, adoption status, generated diff status, and ecosystem-aware next actions with `readme-forge doctor`.
 - Exports shareable Markdown doctor reports with `readme-forge doctor --report`.
 - Creates local README review bundles with generated output, visual comparison, Markdown summary, doctor report, PR comment, and JSON data.
+- Safely applies reviewed README bundles with hash checks, stale-review protection, dry-runs, and automatic backups.
 - Scores README quality across setup, scripts, testing, license, contribution, and security coverage.
 - Supports minimum score gates for CI with `--min-score`.
 - Supports diff reviews and JSON output for automation.
@@ -188,6 +196,16 @@ npm run dev -- review . --readme docs/PROJECT.md --profile strict --min-score 90
 ```
 
 The review command writes a safe local bundle containing `README.generated.md`, `compare.html`, `compare.md`, `doctor.md`, `PR_COMMENT.md`, `summary.json`, and an index `README.md`. It does not overwrite the project README. By default it runs locally without uploading project data; AI refinement is opt-in through `--ai` or config. See [`docs/REVIEW.md`](docs/REVIEW.md).
+
+Safely apply a reviewed README:
+
+```bash
+npm run dev -- apply . --dry-run
+npm run dev -- apply .
+npm run dev -- apply . --from reports/readme-review
+```
+
+The apply command reads `README.generated.md` from a review bundle, verifies recorded hashes, refuses stale bundles when the README changed after review, and writes a backup beside the target README before applying. See [`docs/APPLY.md`](docs/APPLY.md).
 
 Generate a visual review report:
 
@@ -364,6 +382,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - visual before/after reports for reviewing generated documentation with non-CLI collaborators
 - GitHub-friendly comparison summaries for PR comments and CI output
 - complete local review bundles for maintainers who want one folder with every review artifact
+- safe README application with dry-run previews, stale-review checks, and backup files
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project

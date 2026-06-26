@@ -50,6 +50,9 @@ The command writes only inside the requested output folder. It does not overwrit
 2. Open `readme-forge-review/README.md`.
 3. Inspect `compare.html` for visual review.
 4. Copy `PR_COMMENT.md` into a GitHub issue or pull request when asking for feedback.
-5. Use `README.generated.md` only when the generated result is better than the current README.
+5. Run `readme-forge apply . --dry-run` to preview the safe apply step.
+6. Run `readme-forge apply .` only when the generated result is better than the current README.
+
+See [`docs/APPLY.md`](APPLY.md) for the hash checks, backup behavior, and `--force` escape hatch.
 
 By default, the bundle is generated locally and no project data is uploaded. If you use `--ai` or set `"ai": true` in `readme-forge.config.json`, project metadata may be sent to the configured Gemini API.

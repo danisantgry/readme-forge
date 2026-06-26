@@ -51,10 +51,13 @@ function parseGitHubRepository(url) {
     };
 }
 const ignoredEntries = new Set([".git", ".readme-forge", "node_modules", "dist", "coverage", "readme-forge-review"]);
+function isIgnoredEntry(name) {
+    return ignoredEntries.has(name) || name.includes(".readme-forge-backup");
+}
 async function listProjectEntries(root) {
     const entries = await readdir(root, { withFileTypes: true });
     return entries
-        .filter((entry) => !ignoredEntries.has(entry.name))
+        .filter((entry) => !isIgnoredEntry(entry.name))
         .map((entry) => entry.name)
         .sort((a, b) => a.localeCompare(b));
 }

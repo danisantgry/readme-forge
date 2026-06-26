@@ -90,10 +90,14 @@ function parseGitHubRepository(url: string): RepositoryInfo {
 
 const ignoredEntries = new Set([".git", ".readme-forge", "node_modules", "dist", "coverage", "readme-forge-review"]);
 
+function isIgnoredEntry(name: string): boolean {
+  return ignoredEntries.has(name) || name.includes(".readme-forge-backup");
+}
+
 async function listProjectEntries(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true });
   return entries
-    .filter((entry) => !ignoredEntries.has(entry.name))
+    .filter((entry) => !isIgnoredEntry(entry.name))
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b));
 }

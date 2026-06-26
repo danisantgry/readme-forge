@@ -639,6 +639,7 @@ describe("readme-forge", () => {
     const generated = await readFile(path.join(reviewDir, "README.generated.md"), "utf8");
     const prComment = await readFile(path.join(reviewDir, "PR_COMMENT.md"), "utf8");
     const summary = JSON.parse(await readFile(path.join(reviewDir, "summary.json"), "utf8")) as {
+      hashes: { currentReadmeSha256: string; generatedReadmeSha256: string };
       project: { name: string; readmePath: string };
       readme: { generatedScore: number; generatedWithAi: boolean; improvement: number };
       files: Record<string, string>;
@@ -655,8 +656,91 @@ describe("readme-forge", () => {
     expect(summary.readme.generatedScore).toBeGreaterThan(summary.readme.improvement);
     expect(summary.readme.generatedWithAi).toBe(false);
     expect(summary.files.generatedReadme).toBe("readme-forge-review/README.generated.md");
+    expect(summary.hashes.currentReadmeSha256).toHaveLength(64);
+    expect(summary.hashes.generatedReadmeSha256).toHaveLength(64);
     expect(originalReadme).toBe("# review-demo\n");
     expect(facts.files).not.toContain("readme-forge-review");
+  });
+
+  it("safely applies a reviewed README bundle with dry-run and backup", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-apply-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "apply-demo",
+      description: "An apply workflow demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# apply-demo\n");
+
+    await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "review",
+      root
+    ]);
+
+    const dryRun = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "apply",
+      root,
+      "--dry-run"
+    ]);
+    expect(dryRun.stdout).toContain("Would apply");
+    expect(await readFile(path.join(root, "README.md"), "utf8")).toBe("# apply-demo\n");
+
+    const applied = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "apply",
+      root
+    ]);
+    const updatedReadme = await readFile(path.join(root, "README.md"), "utf8");
+    const backup = await readFile(path.join(root, "README.md.readme-forge-backup"), "utf8");
+    const facts = await analyzeProject(root);
+
+    expect(applied.stdout).toContain("Applied");
+    expect(applied.stdout).toContain("Wrote backup");
+    expect(updatedReadme).toContain("## Getting Started");
+    expect(backup).toBe("# apply-demo\n");
+    expect(facts.files).not.toContain("README.md.readme-forge-backup");
+
+    const unchanged = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "apply",
+      root
+    ]);
+    expect(unchanged.stdout).toContain("already matches");
+  });
+
+  it("refuses to apply a review bundle when the README changed after review", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-apply-stale-${Date.now()}-${Math.random()}`), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "stale-apply-demo",
+      description: "A stale apply workflow demo.",
+      license: "MIT",
+      scripts: { test: "node --test" }
+    }));
+    await writeFile(path.join(root, "README.md"), "# stale-apply-demo\n");
+
+    await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "review",
+      root
+    ]);
+    await writeFile(path.join(root, "README.md"), "# stale-apply-demo\n\nManual edit.\n");
+
+    const blocked = await exec(process.execPath, [
+      "node_modules/tsx/dist/cli.mjs",
+      "src/cli.ts",
+      "apply",
+      root
+    ]).catch((error: { stderr: string }) => error);
+
+    expect(blocked.stderr).toContain("README changed after the review bundle was created");
+    expect(await readFile(path.join(root, "README.md"), "utf8")).toContain("Manual edit");
   });
 
   it("adds ecosystem-aware doctor recommendations for web apps and Python packages", async () => {

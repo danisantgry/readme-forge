@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { createComparisonReport, formatComparisonMarkdown, renderComparisonHtml } from "./compare.js";
 import { formatDoctorReport } from "./doctor.js";
@@ -8,6 +9,9 @@ function relativePath(from, target) {
 }
 function markdownCode(value) {
     return `\`${String(value).replaceAll("`", "\\`")}\``;
+}
+function sha256(source) {
+    return createHash("sha256").update(source).digest("hex");
 }
 function fileList(files, directory) {
     return Object.entries(files)
@@ -58,6 +62,8 @@ ${topRecommendations(report)}
 \`\`\`bash
 readme-forge . --diff
 readme-forge compare . --output readme-forge-review/compare.html
+readme-forge apply . --dry-run
+readme-forge apply .
 \`\`\`
 
 ${privacyNotice(ai)}
@@ -85,6 +91,7 @@ ${topRecommendations(report)}
 \`\`\`bash
 readme-forge review .
 readme-forge . --diff
+readme-forge apply . --dry-run
 \`\`\`
 
 ${privacyNotice(ai)}`;
@@ -101,6 +108,10 @@ function createSummary(input, comparison, files) {
             profile: comparison.profile
         },
         diff: comparison.diff,
+        hashes: {
+            currentReadmeSha256: sha256(input.existing),
+            generatedReadmeSha256: sha256(input.generated)
+        },
         doctor: {
             ok: input.doctorReport.ok,
             recommendations: input.doctorReport.recommendations.map((recommendation) => ({

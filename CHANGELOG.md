@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.19.0 - 2026-06-26
+
+- Added `readme-forge apply` for safely applying reviewed README bundles.
+- Added `--dry-run`, `--from`, `--readme`, and `--force` support to the apply workflow.
+- Added SHA-256 hashes to review bundle summaries so apply can verify generated README integrity and detect stale reviews.
+- Added automatic README backups before applying generated content.
+- Added analyzer and `.gitignore` protection for generated backup files.
+- Added apply workflow documentation and regression tests for dry-run, backup, already-applied, and stale-review behavior.
+
 ## 0.18.0 - 2026-06-25
 
 - Added `readme-forge review` for complete local README review bundles.

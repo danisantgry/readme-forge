@@ -2,6 +2,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { analyzeProject } from "./analyzer.js";
+import { applyReadmeFromBundle } from "./apply.js";
 import { createComparisonReport, formatComparisonMarkdown, renderComparisonHtml } from "./compare.js";
 import { loadConfig, type OutputFormat } from "./config.js";
 import { formatUnifiedDiff } from "./diff.js";
@@ -28,7 +29,7 @@ type Args = {
 
 type CompareFormat = "html" | "markdown" | "json";
 
-const optionNames = new Set(["--config", "--format", "--min-score", "--output", "--profile", "--readme", "--report", "--template"]);
+const optionNames = new Set(["--config", "--format", "--from", "--min-score", "--output", "--profile", "--readme", "--report", "--template"]);
 const initOptionNames = new Set(["--min-score", "--path", "--profile", "--template"]);
 
 function getOption(argv: string[], name: string): string | undefined {
@@ -277,6 +278,29 @@ async function runReview(argv: string[]): Promise<void> {
   }
 }
 
+async function runApply(argv: string[]): Promise<void> {
+  const root = resolveRoot(argv);
+  const result = await applyReadmeFromBundle({
+    root,
+    bundleDir: getOption(argv, "--from") ?? "readme-forge-review",
+    dryRun: hasOption(argv, "--dry-run"),
+    force: hasOption(argv, "--force"),
+    readmePath: getOption(argv, "--readme")
+  });
+
+  if (!result.changed) {
+    console.log(`README already matches ${result.sourcePath}`);
+    return;
+  }
+
+  const verb = result.dryRun ? "Would apply" : "Applied";
+  console.log(`${verb} ${result.sourcePath} to ${result.targetPath}`);
+  if (result.backupPath) {
+    console.log(`${result.dryRun ? "Would write" : "Wrote"} backup to ${result.backupPath}`);
+  }
+  console.log(`Generated README sha256: ${result.generatedHash}`);
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   if (argv[0] === "doctor") {
@@ -291,6 +315,11 @@ async function main(): Promise<void> {
 
   if (argv[0] === "review") {
     await runReview(argv.slice(1));
+    return;
+  }
+
+  if (argv[0] === "apply") {
+    await runApply(argv.slice(1));
     return;
   }
 
