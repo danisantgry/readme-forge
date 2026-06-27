@@ -35,7 +35,7 @@
 | --- | --- |
 | Changed | yes |
 | Quality change | +57 percentage points |
-| Additions | +42 |
+| Additions | +48 |
 | Removals | -1 |
 | Unchanged lines | 2 |
 

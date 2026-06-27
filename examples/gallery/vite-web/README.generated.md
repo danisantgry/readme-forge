@@ -9,6 +9,8 @@ A fixture Vite web app.
 - Built with TypeScript, JavaScript.
 - Uses Vite.
 - Keeps the repository layout straightforward to scan.
+- Documents practical local commands from project metadata.
+- Keeps automation expectations clear for contributors.
 - Includes clear setup, run, and test instructions.
 - Includes a web application workflow with clear local development commands.
 
@@ -24,6 +26,10 @@ npm run dev
 - `dev`: `vite`
 - `build`: `vite build`
 - `test`: `vitest run`
+
+## Configuration
+
+- Configuration files: `tsconfig.json`.
 
 ## Testing
 

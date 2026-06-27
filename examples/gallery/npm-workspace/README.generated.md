@@ -9,6 +9,8 @@ A fixture npm workspace.
 - Built with JavaScript.
 - Keeps dependencies focused and easy to inspect.
 - Includes 2 workspace packages.
+- Documents practical local commands from project metadata.
+- Keeps automation expectations clear for contributors.
 - Includes clear setup, run, and test instructions.
 - Documents installation, usage, testing, and project structure for library consumers.
 
@@ -30,6 +32,7 @@ npm run build
 npm run test
 ```
 
+
 ## Workspace Packages
 
 Package manager: `npm`
@@ -38,7 +41,6 @@ Patterns: `packages/*`, `apps/*`
 
 - `@fixture/core` at `packages/core`: Shared workspace library.
 - `@fixture/web` at `apps/web`: Workspace web app.
-
 
 ## Project Structure
 

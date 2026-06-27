@@ -19,6 +19,12 @@ export type RepositoryInfo = {
   name?: string;
 };
 
+export type AutomationSignals = {
+  ciWorkflows: string[];
+  dockerFiles: string[];
+  hasMakefile: boolean;
+};
+
 export type ProjectFacts = {
   name: string;
   description: string;
@@ -26,6 +32,11 @@ export type ProjectFacts = {
   packageManager: "npm" | "pnpm" | "yarn" | "unknown";
   privatePackage: boolean;
   repository?: RepositoryInfo;
+  automation: AutomationSignals;
+  binCommands: string[];
+  configFiles: string[];
+  entrypoints: string[];
+  environmentFiles: string[];
   languages: string[];
   frameworks: string[];
   scripts: Record<string, string>;
@@ -72,6 +83,34 @@ function readRepositoryUrl(value: unknown): string | undefined {
     return (value as { url: string }).url;
   }
   return undefined;
+}
+
+function readBinCommands(value: unknown): string[] {
+  if (typeof value === "string" && value.trim()) return [value.trim()];
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return Object.keys(value as Record<string, unknown>).sort((a, b) => a.localeCompare(b));
+  }
+  return [];
+}
+
+function readEntrypoints(packageJson: Record<string, unknown> | undefined): string[] {
+  if (!packageJson) return [];
+  const entrypoints = [
+    typeof packageJson.main === "string" ? `main: ${packageJson.main}` : undefined,
+    typeof packageJson.module === "string" ? `module: ${packageJson.module}` : undefined,
+    typeof packageJson.types === "string" ? `types: ${packageJson.types}` : undefined,
+    typeof packageJson.typings === "string" ? `typings: ${packageJson.typings}` : undefined
+  ];
+
+  if (typeof packageJson.exports === "string") {
+    entrypoints.push(`exports: ${packageJson.exports}`);
+  } else if (packageJson.exports && typeof packageJson.exports === "object" && !Array.isArray(packageJson.exports)) {
+    for (const key of Object.keys(packageJson.exports as Record<string, unknown>).slice(0, 8)) {
+      entrypoints.push(`exports ${key}`);
+    }
+  }
+
+  return [...new Set(entrypoints.filter((entrypoint): entrypoint is string => Boolean(entrypoint)))];
 }
 
 function parseGitHubRepository(url: string): RepositoryInfo {
@@ -159,7 +198,7 @@ async function expandWorkspacePattern(root: string, pattern: string): Promise<st
   const base = parts.slice(0, starIndex).join("/");
   const entries = await readdir(path.join(root, base || "."), { withFileTypes: true }).catch(() => []);
   return entries
-    .filter((entry) => entry.isDirectory() && !ignoredEntries.has(entry.name))
+    .filter((entry) => entry.isDirectory() && !isIgnoredEntry(entry.name))
     .map((entry) => (base ? `${base}/${entry.name}` : entry.name))
     .sort((a, b) => a.localeCompare(b));
 }
@@ -185,6 +224,42 @@ async function detectWorkspaces(root: string, files: string[], packageJson: Reco
   return { manager, patterns, packages };
 }
 
+async function detectCiWorkflows(root: string, files: string[]): Promise<string[]> {
+  if (!files.includes(".github")) return [];
+  const workflowsRoot = path.join(root, ".github", "workflows");
+  const entries = await readdir(workflowsRoot, { withFileTypes: true }).catch(() => []);
+  return entries
+    .filter((entry) => entry.isFile() && /\.(ya?ml)$/i.test(entry.name))
+    .map((entry) => `.github/workflows/${entry.name}`)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function detectConfigFiles(files: string[]): string[] {
+  const configPatterns = [
+    /^readme-forge\.config\.json$/,
+    /^tsconfig(\..+)?\.json$/,
+    /^vite\.config\.[cm]?[jt]s$/,
+    /^next\.config\.[cm]?[jt]s$/,
+    /^eslint\.config\.[cm]?[jt]s$/,
+    /^prettier\.config\.[cm]?[jt]s$/,
+    /^jest\.config\.[cm]?[jt]s$/,
+    /^vitest\.config\.[cm]?[jt]s$/,
+    /^pyproject\.toml$/,
+    /^Cargo\.toml$/,
+    /^go\.mod$/
+  ];
+
+  return files.filter((file) => configPatterns.some((pattern) => pattern.test(file)));
+}
+
+function detectEnvironmentFiles(files: string[]): string[] {
+  return files.filter((file) => /^\.env\.(example|sample|template)$/.test(file) || /^example\.env$/i.test(file));
+}
+
+function detectDockerFiles(files: string[]): string[] {
+  return files.filter((file) => /^Dockerfile($|\.)/.test(file) || /^docker-compose\.(ya?ml)$/i.test(file) || /^compose\.(ya?ml)$/i.test(file));
+}
+
 export async function analyzeProject(root: string): Promise<ProjectFacts> {
   const files = await listProjectEntries(root);
   const packageJson = await readJson(path.join(root, "package.json"));
@@ -192,6 +267,7 @@ export async function analyzeProject(root: string): Promise<ProjectFacts> {
   const cargoToml = files.includes("Cargo.toml") ? await readText(path.join(root, "Cargo.toml")) : "";
   const goMod = files.includes("go.mod") ? await readText(path.join(root, "go.mod")) : "";
   const workspaces = await detectWorkspaces(root, files, packageJson);
+  const ciWorkflows = await detectCiWorkflows(root, files);
   const dependencies = {
     ...(packageJson?.dependencies as Record<string, string> | undefined),
     ...(packageJson?.devDependencies as Record<string, string> | undefined)
@@ -223,6 +299,15 @@ export async function analyzeProject(root: string): Promise<ProjectFacts> {
     packageManager: detectPackageManager(files),
     privatePackage: packageJson?.private === true,
     repository: readRepositoryUrl(packageJson?.repository) ? parseGitHubRepository(readRepositoryUrl(packageJson?.repository) as string) : undefined,
+    automation: {
+      ciWorkflows,
+      dockerFiles: detectDockerFiles(files),
+      hasMakefile: files.includes("Makefile")
+    },
+    binCommands: readBinCommands(packageJson?.bin),
+    configFiles: detectConfigFiles(files),
+    entrypoints: readEntrypoints(packageJson),
+    environmentFiles: detectEnvironmentFiles(files),
     languages,
     frameworks,
     scripts: (packageJson?.scripts as Record<string, string> | undefined) ?? {},

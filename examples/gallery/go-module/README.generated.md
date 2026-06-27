@@ -9,6 +9,8 @@ A useful software project.
 - Built with Go.
 - Uses Go module.
 - Keeps the repository layout straightforward to scan.
+- Documents practical local commands from project metadata.
+- Keeps automation expectations clear for contributors.
 - Includes clear setup, run, and test instructions.
 - Documents installation, usage, testing, and project structure for library consumers.
 
@@ -22,6 +24,10 @@ A useful software project.
 ## Scripts
 
 - Add project scripts to document common workflows.
+
+## Configuration
+
+- Configuration files: `go.mod`.
 
 ## Testing
 

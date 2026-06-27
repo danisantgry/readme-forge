@@ -13,6 +13,11 @@ export type RepositoryInfo = {
     owner?: string;
     name?: string;
 };
+export type AutomationSignals = {
+    ciWorkflows: string[];
+    dockerFiles: string[];
+    hasMakefile: boolean;
+};
 export type ProjectFacts = {
     name: string;
     description: string;
@@ -20,6 +25,11 @@ export type ProjectFacts = {
     packageManager: "npm" | "pnpm" | "yarn" | "unknown";
     privatePackage: boolean;
     repository?: RepositoryInfo;
+    automation: AutomationSignals;
+    binCommands: string[];
+    configFiles: string[];
+    entrypoints: string[];
+    environmentFiles: string[];
     languages: string[];
     frameworks: string[];
     scripts: Record<string, string>;

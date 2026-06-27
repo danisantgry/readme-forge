@@ -21,6 +21,9 @@ function presetLine(preset) {
         return "Includes a web application workflow with clear local development commands.";
     return "Documents installation, usage, testing, and project structure for library consumers.";
 }
+function plural(value, singular, pluralValue = `${singular}s`) {
+    return value === 1 ? singular : pluralValue;
+}
 function badgeSection(facts, enabled) {
     if (!enabled)
         return "";
@@ -49,12 +52,56 @@ function workspaceSection(facts) {
         : "- No package manifests were found for the configured workspace patterns.";
     return `\n## Workspace Packages\n\nPackage manager: \`${facts.workspaces.manager}\`\n\nPatterns: ${facts.workspaces.patterns.map((pattern) => `\`${pattern}\``).join(", ")}\n\n${packages}\n`;
 }
+function usageSection(facts, selectedPreset) {
+    if (!facts.binCommands.length)
+        return "";
+    const primaryCommand = facts.binCommands[0];
+    const installCommand = facts.packageName && !facts.privatePackage ? `npx ${facts.packageName} --help` : `${primaryCommand} --help`;
+    const commands = facts.binCommands.map((command) => `- \`${command}\``).join("\n");
+    return `\n## Usage\n\n${selectedPreset === "cli" ? "Run the CLI help command after installation:" : "The package exposes command-line entrypoints:"}\n\n\`\`\`bash\n${installCommand}\n\`\`\`\n\nAvailable command${facts.binCommands.length === 1 ? "" : "s"}:\n\n${commands}\n`;
+}
+function configurationSection(facts) {
+    const lines = [];
+    if (facts.configFiles.length) {
+        lines.push(`Configuration files: ${facts.configFiles.map((file) => `\`${file}\``).join(", ")}.`);
+    }
+    if (facts.environmentFiles.length) {
+        lines.push(`Environment examples: ${facts.environmentFiles.map((file) => `\`${file}\``).join(", ")}.`);
+        lines.push("Copy the appropriate example file before running the project locally.");
+    }
+    return lines.length ? `\n## Configuration\n\n${lines.map((line) => `- ${line}`).join("\n")}\n` : "";
+}
+function entrypointSection(facts) {
+    if (!facts.entrypoints.length)
+        return "";
+    return `\n## Package Entrypoints\n\n${facts.entrypoints.map((entrypoint) => `- \`${entrypoint}\``).join("\n")}\n`;
+}
+function automationSection(facts) {
+    const lines = [];
+    if (facts.automation.ciWorkflows.length) {
+        lines.push(`CI workflow${facts.automation.ciWorkflows.length === 1 ? "" : "s"}: ${facts.automation.ciWorkflows.map((file) => `\`${file}\``).join(", ")}.`);
+    }
+    if (facts.automation.dockerFiles.length) {
+        lines.push(`Container file${facts.automation.dockerFiles.length === 1 ? "" : "s"}: ${facts.automation.dockerFiles.map((file) => `\`${file}\``).join(", ")}.`);
+    }
+    if (facts.automation.hasMakefile) {
+        lines.push("A `Makefile` is present for task automation.");
+    }
+    return lines.length ? `\n## Automation\n\n${lines.map((line) => `- ${line}`).join("\n")}\n` : "";
+}
 export function generateReadme(facts, preset = "auto", options = {}) {
     const scripts = Object.keys(facts.scripts);
     const selectedPreset = inferPreset(facts, preset);
     const install = facts.packageManager === "unknown" ? "# install dependencies for your stack" : commandFor(facts.packageManager, "install");
     const run = scripts.includes("dev") ? commandFor(facts.packageManager, "dev") : scripts[0] ? commandFor(facts.packageManager, scripts[0]) : "# add a run command";
     const test = scripts.includes("test") ? commandFor(facts.packageManager, "test") : "# add tests";
+    const metadataSections = [
+        usageSection(facts, selectedPreset),
+        configurationSection(facts),
+        entrypointSection(facts),
+        automationSection(facts)
+    ].map((section) => section.trim()).filter(Boolean).join("\n\n");
+    const workspace = workspaceSection(facts).trim();
     return `# ${facts.name}
 
 ${badgeSection(facts, options.badges !== false)}${facts.description}
@@ -64,6 +111,8 @@ ${badgeSection(facts, options.badges !== false)}${facts.description}
 - Built with ${facts.languages.length ? facts.languages.join(", ") : "a lightweight project structure"}.
 - ${facts.frameworks.length ? `Uses ${facts.frameworks.join(", ")}.` : "Keeps dependencies focused and easy to inspect."}
 - ${facts.workspaces ? `Includes ${facts.workspaces.packages.length} workspace package${facts.workspaces.packages.length === 1 ? "" : "s"}.` : "Keeps the repository layout straightforward to scan."}
+- ${facts.binCommands.length ? `Exposes ${facts.binCommands.length} CLI ${plural(facts.binCommands.length, "command")}.` : "Documents practical local commands from project metadata."}
+- ${facts.automation.ciWorkflows.length || facts.automation.dockerFiles.length || facts.automation.hasMakefile ? "Surfaces automation assets for contributors." : "Keeps automation expectations clear for contributors."}
 - Includes clear setup, run, and test instructions.
 - ${presetLine(selectedPreset)}
 
@@ -76,14 +125,14 @@ ${run}
 
 ## Scripts
 
-${scripts.length ? scripts.map((script) => `- \`${script}\`: \`${facts.scripts[script]}\``).join("\n") : "- Add project scripts to document common workflows."}
+${scripts.length ? scripts.map((script) => `- \`${script}\`: \`${facts.scripts[script]}\``).join("\n") : "- Add project scripts to document common workflows."}${metadataSections ? `\n\n${metadataSections}` : ""}
 
 ## Testing
 
 \`\`\`bash
 ${test}
 \`\`\`
-${workspaceSection(facts)}
+${workspace ? `\n\n${workspace}` : ""}
 
 ## Project Structure
 

@@ -23,7 +23,9 @@ The fixture tests verify that each project:
 - produces the expected project name
 - detects the expected language and framework marker
 - detects workspace manager, patterns, and package summaries when applicable
+- detects maintainer signals such as CLI bins, entrypoints, config files, env examples, Docker files, Makefile, and GitHub Actions workflows
 - generates a README with setup and testing sections
+- generates metadata-backed Usage, Configuration, Package Entrypoints, and Automation sections when signals exist
 - produces a 100% README quality score for generated output
 
 ## Generated Gallery

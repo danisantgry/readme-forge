@@ -9,6 +9,8 @@ A fixture command-line tool.
 - Built with TypeScript, JavaScript.
 - Keeps dependencies focused and easy to inspect.
 - Keeps the repository layout straightforward to scan.
+- Documents practical local commands from project metadata.
+- Keeps automation expectations clear for contributors.
 - Includes clear setup, run, and test instructions.
 - Provides a command-line workflow for repeatable local automation.
 
@@ -24,6 +26,10 @@ npm run dev
 - `build`: `tsc`
 - `test`: `vitest run`
 - `dev`: `tsx src/cli.ts`
+
+## Configuration
+
+- Configuration files: `tsconfig.json`.
 
 ## Testing
 

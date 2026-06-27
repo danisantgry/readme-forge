@@ -193,6 +193,45 @@ describe("readme-forge", () => {
     expect(result.stdout).not.toContain("img.shields.io");
   });
 
+  it("detects maintainer signals and includes them in generated README output", async () => {
+    const root = await mkdir(path.join(os.tmpdir(), `readme-forge-signals-${Date.now()}-${Math.random()}`), { recursive: true });
+    await mkdir(path.join(root, ".github", "workflows"), { recursive: true });
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      name: "signal-cli",
+      description: "A signal-rich CLI package.",
+      license: "MIT",
+      bin: { "signal-cli": "dist/cli.js" },
+      main: "dist/index.js",
+      types: "dist/index.d.ts",
+      exports: { ".": "./dist/index.js", "./cli": "./dist/cli.js" },
+      scripts: { build: "tsc", test: "node --test" }
+    }));
+    await writeFile(path.join(root, "tsconfig.json"), "{}");
+    await writeFile(path.join(root, ".env.example"), "API_URL=http://localhost\n");
+    await writeFile(path.join(root, "Dockerfile"), "FROM node:20\n");
+    await writeFile(path.join(root, "Makefile"), "test:\n\tnpm test\n");
+    await writeFile(path.join(root, ".github", "workflows", "ci.yml"), "name: CI\n");
+
+    const facts = await analyzeProject(root);
+    const readme = generateReadme(facts, "cli");
+
+    expect(facts.binCommands).toEqual(["signal-cli"]);
+    expect(facts.configFiles).toContain("tsconfig.json");
+    expect(facts.environmentFiles).toContain(".env.example");
+    expect(facts.entrypoints).toContain("main: dist/index.js");
+    expect(facts.entrypoints).toContain("types: dist/index.d.ts");
+    expect(facts.automation.ciWorkflows).toEqual([".github/workflows/ci.yml"]);
+    expect(facts.automation.dockerFiles).toEqual(["Dockerfile"]);
+    expect(facts.automation.hasMakefile).toBe(true);
+    expect(readme).toContain("## Usage");
+    expect(readme).toContain("npx signal-cli --help");
+    expect(readme).toContain("## Configuration");
+    expect(readme).toContain("`.env.example`");
+    expect(readme).toContain("## Package Entrypoints");
+    expect(readme).toContain("## Automation");
+    expect(readme).toContain("`.github/workflows/ci.yml`");
+  });
+
   it("returns a scored README quality report from the CLI", async () => {
     const root = await mkdir(path.join(os.tmpdir(), `readme-forge-check-${Date.now()}-${Math.random()}`), { recursive: true });
     await writeFile(path.join(root, "package.json"), JSON.stringify({

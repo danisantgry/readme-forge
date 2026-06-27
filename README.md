@@ -106,7 +106,9 @@ See the full [generated README gallery](docs/GALLERY.md).
 ## Features
 
 - Detects project name, description, scripts, package manager, npm/pnpm/yarn workspaces, TypeScript, Vite, Next.js, React, Express, Python, Rust, and Go markers.
+- Detects maintainer signals such as CLI bin commands, package entrypoints, config files, environment examples, Docker files, Makefile, and GitHub Actions workflows.
 - Generates setup, scripts, testing, structure, and license sections.
+- Generates conditional Usage, Configuration, Package Entrypoints, and Automation sections from repository metadata.
 - Supports custom output paths.
 - Supports `cli`, `library`, and `web` template presets.
 - Supports `readme-forge.config.json` for repeatable repository defaults.
@@ -383,6 +385,7 @@ For repository health checks, see [`docs/DOCTOR.md`](docs/DOCTOR.md).
 - GitHub-friendly comparison summaries for PR comments and CI output
 - complete local review bundles for maintainers who want one folder with every review artifact
 - safe README application with dry-run previews, stale-review checks, and backup files
+- richer generated READMEs that surface CLI commands, config files, entrypoints, env examples, Docker assets, Makefiles, and CI workflows
 - workspace summaries for monorepos without deep repository scans
 - deterministic README badges for release, issues, license, and npm package status
 - optional AI refinement without making AI required for the project
@@ -394,6 +397,7 @@ If you maintain an open-source project, feedback is especially useful on:
 - README sections that should be checked by `--check`
 - ecosystem metadata that should be detected next
 - workspace layouts that should be summarized more precisely
+- maintainer signals that should appear in generated Usage, Configuration, or Automation sections
 - workflows that should consume `--format json`
 - scoring rules that should count toward README quality
 - config fields that would make repository adoption easier
@@ -416,6 +420,7 @@ Open feedback in [issue #5](https://github.com/danisantgry/readme-forge/issues/5
 - More configurable README quality scoring profiles for different project types.
 - Gallery screenshots or richer before/after documentation examples.
 - More ecosystem-aware doctor recommendations.
+- More maintainer-signal detectors for generated README sections.
 
 ## Contributing
 

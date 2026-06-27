@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.0 - 2026-06-27
+
+- Added maintainer-signal detection for CLI bin commands, package entrypoints, config files, environment example files, Docker files, Makefile, and GitHub Actions workflows.
+- Updated generated READMEs with conditional Usage, Configuration, Package Entrypoints, and Automation sections.
+- Improved generated Highlights so repository-specific commands and automation assets are visible earlier.
+- Added regression coverage for signal-rich CLI packages.
+- Regenerated the example gallery with the richer README output.
+
 ## 0.19.0 - 2026-06-26
 
 - Added `readme-forge apply` for safely applying reviewed README bundles.
